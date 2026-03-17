@@ -1,12 +1,5 @@
 #include "os.h"
 
-#define UART0_BASE 0x101f1000
-
-#define UART_DR      0x00  // Data Register
-#define UART_FR      0x18  // Flag Register
-#define UART_FR_TXFF 0x20  // Transmit FIFO Full
-#define UART_FR_RXFE 0x10  // Receive FIFO Empty
-
 volatile unsigned int * const UART0 = (unsigned int *)UART0_BASE;
 
 // Function to send a single character via UART
