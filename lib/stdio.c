@@ -1,10 +1,4 @@
 #include "stdio.h"
-#include "./os.h"
-
-#include <stdarg.h>   //Este se usa para parametros dinamicos
-
-#define FLOAT_SCALE 100
-#define INPUT_BUF_SIZE 32
 
 // Simple function to convert string to integer
 int uart_atoi(const char *s) {
