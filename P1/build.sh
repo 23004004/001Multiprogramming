@@ -7,6 +7,7 @@ set -e
 # Run from script directory so paths work from anywhere
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
+mkdir -p bin 
 
 echo
 echo "Building Process 1..."
@@ -24,7 +25,7 @@ OBJCOPY="arm-none-eabi-objcopy"
 case "$TARGET" in
   versatilepb)
     CFLAGS="-DPLATFORM_VERSATILEPB"
-    RUN_CMD="qemu-system-arm -M versatilepb -nographic -kernel main.elf"
+    RUN_CMD="qemu-system-arm -M versatilepb -nographic -kernel bin/main.elf"
     ;;
   beaglebone)
     CFLAGS="-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard -DPLATFORM_BEAGLEBONE"
@@ -38,25 +39,25 @@ esac
 
 # Remove previous compiled objects and binaries
 echo "  Cleaning up previous build files..."
-rm -f *.o ./../lib/*.o main.elf main.bin
+rm -f bin/*.o bin/main.elf bin/main.bin
 
 echo "  Assembling root.s..."
-$AS -o root.o root.s
+$AS -o bin/root.o root.s
 
 echo "  Compiling os..."
-$CC -c $CFLAGS -o ./../lib/os.o ./../lib/os.c
+$CC -c $CFLAGS -o bin/os.o ./../OS/os.c
 
 echo "  Compiling library..."
-$CC -c $CFLAGS -o ./../lib/stdio.o ./../lib/stdio.c
+$CC -c $CFLAGS -o bin/stdio.o ./../lib/stdio.c
 
 echo "  Compiling main.c..."
-$CC -c $CFLAGS -o main.o main.c
+$CC -c $CFLAGS -o bin/main.o main.c
 
 echo "  Linking object files..."
-$LD $LDFLAGS -o main.elf root.o ./../lib/os.o ./../lib/stdio.o main.o
+$LD $LDFLAGS -o bin/main.elf bin/root.o bin/os.o bin/stdio.o bin/main.o
 
 echo "  Converting ELF to binary..."
-$OBJCOPY -O binary main.elf main.bin
+$OBJCOPY -O binary bin/main.elf bin/main.bin
 
 if [ "$TARGET" = "versatilepb" ]; then
   echo "  Build complete for VerstatilePB. Run with: $RUN_CMD"

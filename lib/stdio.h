@@ -1,7 +1,7 @@
 #ifndef STDIO_H
 #define STDIO_H
 
-#include "./os.h"
+#include "../OS/os.h"
 
 #include <stdarg.h>   //Este se usa para parametros dinamicos
 
