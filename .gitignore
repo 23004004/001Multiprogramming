@@ -1,0 +1,4 @@
+# Compilation files
+*.o
+*.elf
+*.bin
