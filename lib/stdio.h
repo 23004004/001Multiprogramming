@@ -10,7 +10,5 @@
 
 void PRINT(const char *fmt, ...);
 void READ(const char *fmt, ...);
-int parse_int(const char *s);
-
 
 #endif

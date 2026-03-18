@@ -1,24 +1,5 @@
 #include "stdio.h"
 
-// Simple function to convert string to integer
-int uart_atoi(const char *s) {
-    int num = 0;
-    int sign = 1;
-    int i = 0;
-
-    // Handle optional sign
-    if (s[i] == '-') {
-        sign = -1;
-        i++;
-    }
-
-    for (; s[i] >= '0' && s[i] <= '9'; i++) {
-        num = num * 10 + (s[i] - '0');
-    }
-
-    return sign * num;
-}
-
 // Function to convert integer to string
 void uart_itoa(int num, char *buffer) {
     int i = 0;
@@ -65,6 +46,25 @@ static void print_int(int value) {
     uart_puts(buf);
 }
 
+// Simple function to convert string to integer
+int uart_atoi(const char *s) {
+    int num = 0;
+    int sign = 1;
+    int i = 0;
+
+    // Handle optional sign
+    if (s[i] == '-') {
+        sign = -1;
+        i++;
+    }
+
+    for (; s[i] >= '0' && s[i] <= '9'; i++) {
+        num = num * 10 + (s[i] - '0');
+    }
+
+    return sign * num;
+}
+
 //Apunta al inicio del puntero, le decimos el tipo con el %d %f o %s
 void PRINT(const char *fmt, ...) {
     va_list args;
@@ -102,17 +102,13 @@ void READ(const char *fmt, ...) {
     if (*fmt == '%' && *(fmt + 1) == 'd') {
         int *out = va_arg(args, int *);
         char buf[INPUT_BUF_SIZE];
-        uart_gets_input(buf, INPUT_BUF_SIZE);
+        uart_gets(buf, INPUT_BUF_SIZE);
         *out = uart_atoi(buf);
     }
     else if (*fmt == '%' && *(fmt + 1) == 's') {
         char *out = va_arg(args, char *);
-        uart_gets_input(out, INPUT_BUF_SIZE);
+        uart_gets(out, INPUT_BUF_SIZE);
     }
 
     va_end(args);
-}
-
-int parse_int(const char *s){
-    return uart_atoi(s);
 }
