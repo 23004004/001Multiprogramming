@@ -1,8 +1,13 @@
 ENTRY(_start)
 
+MEMORY
+{
+    ram : ORIGIN = MEM_ADDR, LENGTH = 8K
+}
+
 SECTIONS
 {
-    . = 0x00200000; /* Starting address in RAM */
+    . = ORIGIN(ram); /* Starting address in RAM */
 
     .text :
     {
@@ -20,4 +25,7 @@ SECTIONS
         *(.bss*)
         __bss_end = .;
     }
+
+    _stack_bottom = __bss_end;
+    _stack_top = ORIGIN(ram) + LENGTH(ram);
 }

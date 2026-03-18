@@ -7,7 +7,7 @@ set -e
 # Run from script directory so paths work from anywhere
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
-mkdir -p bin 
+mkdir -p bin # Ensure bin directory exists for output files
 
 echo
 echo "Building Process 1..."
@@ -19,17 +19,18 @@ echo "  Selected TARGET=${TARGET}"
 CC="arm-none-eabi-gcc"
 AS="arm-none-eabi-as"
 LD="arm-none-eabi-ld"
-LDFLAGS="-T linker.ld"
 OBJCOPY="arm-none-eabi-objcopy"
 
 case "$TARGET" in
   versatilepb)
     CFLAGS="-DPLATFORM_VERSATILEPB"
+    LDFLAGS="-T linker.ld --defsym=MEM_ADDR=0x00010000"
     RUN_CMD="qemu-system-arm -M versatilepb -nographic -kernel bin/main.elf"
     ;;
   beaglebone)
     CFLAGS="-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard -DPLATFORM_BEAGLEBONE"
-    RUN_CMD=""  # none - deploy to real hardware
+    LDFLAGS="-T linker.ld --defsym=MEM_ADDR=0x82100000"
+    RUN_CMD=""  # none, since we will run on real hardware
     ;;
   *)
     echo "Unknown target: $TARGET"
