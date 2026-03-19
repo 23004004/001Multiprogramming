@@ -3,6 +3,9 @@
 .code 32
 .globl _start
 
+_start:
+b reset_handler
+
 // ARM Vector Table
 .align 5                 @ Align to 32 bytes (2^5)
 vector_table:
@@ -17,8 +20,10 @@ vector_table:
 
 reset_handler:
     // Set CPU to System mode
-    mov r0, #0x1F       @ System mode (0b11111)
-    msr CPSR.M, r0      @ Write to CPSR to switch mode
+    mrs r0, CPSR
+    mov r1, #0x1F   @ System mode (0b11111)
+    orr r0, r0, r1
+    msr CPSR, r0    @ Write to CPSR to switch mode
 
     // Set the initial stack pointer for the OS
     ldr sp, =_stack_top
@@ -72,8 +77,10 @@ fiq_handler:
 
 .globl enable_irq
 enable_irq:
-    mov r0, #0
-    msr CPSR.I, r0  @ Enable IRQs by clearing the I bit in CPSR
+    mrs r0, CPSR
+    mov r1, #0xFFFFFFFFFFFFFF7F
+    and r0, r0, r1
+    msr CPSR, r0    @ Enable IRQs by clearing the I bit in CPSR
     bx lr
 
 // Stack space allocation
