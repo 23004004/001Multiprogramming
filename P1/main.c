@@ -2,16 +2,16 @@
 
 void main(void)
 {
-    int i = 0;
+    int n = 0;
 
     while (1)
     {
-        PRINT("----From P1: %d\n", i);
+        PRINT("----From P1: %d\n", n);
 
-        i++;
-        if (i == 10)
+        n++;
+        if (n == 10)
         {
-            i = 0;
+            n = 0;
         }
 
         // Small delay to prevent overwhelming UART

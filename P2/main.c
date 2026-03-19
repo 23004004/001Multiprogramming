@@ -2,16 +2,16 @@
 
 void main(void)
 {
-    char i = 'a';
+    char c = 'a';
 
     while (1)
     {
-        PRINT("----From P2: %c\n", i);
+        PRINT("----From P2: %c\n", c);
 
-        i++;
-        if (i > 'z')
+        c++;
+        if (c > 'z')
         {
-            i = 'a';
+            c = 'a';
         }
 
         // Small delay to prevent overwhelming UART
