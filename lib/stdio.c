@@ -1,7 +1,30 @@
 #include "stdio.h"
 
+// ============================================================================
+// Standard Library Functions
+// ============================================================================
+
+// Function to convert string to integer
+int atoi(const char *s) {
+    int num = 0;
+    int sign = 1;
+    int i = 0;
+
+    // Handle optional sign
+    if (s[i] == '-') {
+        sign = -1;
+        i++;
+    }
+
+    for (; s[i] >= '0' && s[i] <= '9'; i++) {
+        num = num * 10 + (s[i] - '0');
+    }
+
+    return sign * num;
+}
+
 // Function to convert integer to string
-void uart_itoa(int num, char *buffer) {
+void itoa(int num, char *buffer) {
     int i = 0;
     int is_negative = 0;
 
@@ -39,55 +62,49 @@ void uart_itoa(int num, char *buffer) {
     }
 }
 
-//Funcion para convertir integer a string
-static void print_int(int value) {
-    char buf[16];
-    uart_itoa(value, buf);
-    uart_puts(buf);
-}
+// ============================================================================
+// Standard I/O Functions
+// ============================================================================
 
-// Simple function to convert string to integer
-int uart_atoi(const char *s) {
-    int num = 0;
-    int sign = 1;
-    int i = 0;
-
-    // Handle optional sign
-    if (s[i] == '-') {
-        sign = -1;
-        i++;
-    }
-
-    for (; s[i] >= '0' && s[i] <= '9'; i++) {
-        num = num * 10 + (s[i] - '0');
-    }
-
-    return sign * num;
-}
-
-//Apunta al inicio del puntero, le decimos el tipo con el %d %f o %s
-void PRINT(const char *fmt, ...) {
+// Function to print formatted output based on format specifier
+// (%d for integers, %s for strings)
+void PRINT(const char *fmt, ...)
+{
     va_list args;
     va_start(args, fmt);
 
-    while (*fmt) {
-        if (*fmt == '%') {
-            fmt++; //despues de leer el de arriba se mueve al siguiente caracter
-            if (*fmt == 'd') { //Un entero
+    char buf[BUF_SIZE];
+
+    while (*fmt)
+    {
+        if (*fmt == '%')
+        {
+            fmt++;
+            switch (*fmt)
+            {
+            case 'd':
+            {
                 int val = va_arg(args, int);
-                print_int(val); //Imprime el entero
-            } else if (*fmt == 's') { //Texto
-                char *s = va_arg(args, char *);
-                uart_puts(s); //Imprime le texto
-            } else if (*fmt == 'c') {
-                int val = va_arg(args, int); // char se promueve a int en va_arg
-                uart_putc((char)val);
-            } else {
+                itoa(val, buf);
+                uart_puts(buf);
+                break;
+            }
+            case 's':
+            {
+                const char *s = va_arg(args, const char *);
+                uart_puts(s);
+                break;
+            }
+            default:
+                /* Unknown specifier: print as-is */
                 uart_putc('%');
                 uart_putc(*fmt);
+                break;
             }
-        } else {
-            uart_putc(*fmt); //Solo imprime
+        }
+        else
+        {
+            uart_putc(*fmt);
         }
         fmt++;
     }
@@ -95,19 +112,40 @@ void PRINT(const char *fmt, ...) {
     va_end(args);
 }
 
-void READ(const char *fmt, ...) {
+// Function to read input based on format specifiers
+// (%d for integers, %s for strings)
+void READ(const char *fmt, ...)
+{
     va_list args;
     va_start(args, fmt);
 
-    if (*fmt == '%' && *(fmt + 1) == 'd') {
-        int *out = va_arg(args, int *);
-        char buf[INPUT_BUF_SIZE];
-        uart_gets(buf, INPUT_BUF_SIZE);
-        *out = uart_atoi(buf);
-    }
-    else if (*fmt == '%' && *(fmt + 1) == 's') {
-        char *out = va_arg(args, char *);
-        uart_gets(out, INPUT_BUF_SIZE);
+    while (*fmt)
+    {
+        if (*fmt == '%')
+        {
+            fmt++;
+            switch (*fmt)
+            {
+            case 'd':
+            {
+                int *ptr = va_arg(args, int *);
+                char buf[BUF_SIZE];
+                uart_gets(buf, BUF_SIZE);
+                *ptr = atoi(buf);
+                break;
+            }
+            case 's':
+            {
+                char *ptr = va_arg(args, char *);
+                uart_gets(ptr, BUF_SIZE);
+                break;
+            }
+            default:
+                /* Unknown specifier: ignore */
+                break;
+            }
+        }
+        fmt++;
     }
 
     va_end(args);
