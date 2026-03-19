@@ -63,4 +63,10 @@ char uart_getc(void);
 void uart_puts(const char *s);
 void uart_gets(char *buffer, int max_length);
 
+// ============================================================================
+// Timer Functions
+// ============================================================================
+
+void enable_irq(void);
+
 #endif
