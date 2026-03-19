@@ -1,6 +1,25 @@
 #include "os.h"
 
 // ============================================================================
+// Watchdog Timer Functions
+// ============================================================================
+
+// Function to disable the watchdog timer
+void watchdog_disable(void)
+{
+    #ifdef PLATFORM_BEAGLEBONE
+        // Write 0xAAAA then 0x5555 to WDT1_WSPR, waiting for WDT1_WWPS between writes
+        REG(WDT1_WSPR) = 0xAAAA;
+        while (REG(WDT1_WWPS) != 0)
+            ;
+
+        REG(WDT1_WSPR) = 0x5555;
+        while (REG(WDT1_WWPS) != 0)
+            ;
+    #endif
+}
+
+// ============================================================================
 // UART Functions
 // ============================================================================
 
@@ -14,7 +33,7 @@ void uart_putc(char c)
 }
 
 // Function to receive a single character via UART
-char uart_getc()
+char uart_getc(void)
 {
     // Wait until data is available
     while ((REG(UART0_FR) & UART0_FR_RXFE) != 0)
@@ -48,4 +67,92 @@ void uart_gets(char *buffer, int max_length)
         buffer[i++] = c;
     }
     buffer[i] = '\0'; // Null terminate the string
+}
+
+// ============================================================================
+// Timer Functions
+// ============================================================================
+
+// Function to initialize the timer to generate an interrupt every 2 seconds
+void timer_init(void)
+{
+    #ifdef PLATFORM_BEAGLEBONE
+        // Enabling the timer clock
+        REG(CM_PER_TIMER2_CLKCTRL) = 0x2;
+
+        // Unmasking IRQ 68
+        // Each register of INTC_MIR_CLEAR2 belongs to an IRQ
+        // There are 3 INTC_MIR, so 96 IRQ
+        // bit 0 of INTC_MIR_CLEAR2 -> IRQ 64,
+        // bit 1 of INTC_MIR_CLEAR2 -> IRQ 65,
+        // bit 2 of INTC_MIR_CLEAR2 -> IRQ 66,
+        // bit 3 of INTC_MIR_CLEAR2 -> IRQ 67,
+        // bit 4 of INTC_MIR_CLEAR2 -> IRQ 68,
+        // etc ...
+        REG(INTC_MIR_CLEAR2) = 0x10;
+
+        // Setting interrupt priority to 0x0
+        REG(INTC_ILR68) = 0x0;
+
+        // Stopping the timer
+        REG(DTIMER2_TCLR) = 0x0;
+
+        // Clearing pending interrupts
+        REG(DTIMER2_TISR) = 0x7;
+
+        // Setting the load value for 2 seconds
+        // f: 24 MHz, T: 2 s, f: 1/2 Hz, N = (24MHz)*2 = 48x10^6
+        // max. counter: 0xFFFFFFFF, counter = 0xFFFFFFFF - 48x10^6 = 0xFD2393FF
+        REG(DTIMER2_TLDR) = 0xFD2393FF;
+
+        // Setting the counter to the same value
+        REG(DTIMER2_TCRR) = 0xFD2393FF;
+
+        // Enabling overflow interrupt
+        REG(DTIMER2_TIER) = 0x2;
+
+        // Starting the timer in auto-reload mode
+        REG(DTIMER2_TCLR) = 0x3;
+    #endif
+}
+
+// Function to handle timer interrupts
+void timer_irq_handler(void)
+{
+    #ifdef PLATFORM_BEAGLEBONE
+        // Clearing the timer interrupt flag
+        REG(DTIMER2_TISR) = 0x2;
+
+        // Acknowledging the interrupt to the controller
+        REG(INTC_CONTROL) = 0x1;
+    #endif
+
+    // Printing "Tick\n" via UART
+    uart_puts("Tick\n");
+}
+
+// ============================================================================
+// Main Function
+// ============================================================================
+
+void os_init(void)
+{
+    // Welcome message
+    uart_puts("=== 0001Multiprogramming ===\n");
+    uart_puts(" - Carlos Alvarez - 23004004\n");
+    uart_puts(" - Gabriel Garcia - 17001171\n");
+    uart_puts("\nStarting...\n\n");
+
+    // Disable the watchdog timer to prevent resets
+    uart_puts("Disabling watchdog... ");
+    watchdog_disable();
+    uart_puts("Success\n");
+
+    uart_puts("Initializing timer... ");
+    timer_init();
+    uart_puts("Success\n");
+
+    uart_puts("Enabling interrupts... ");
+    //enable_irq();
+    uart_puts("Success\n");
 }
