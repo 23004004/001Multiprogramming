@@ -73,7 +73,7 @@ void uart_gets(char *buffer, int max_length)
 // Timer Functions
 // ============================================================================
 
-// Function to initialize the timer to generate an interrupt every 2 seconds
+// Function to initialize the timer to generate an interrupt every second
 void timer_init(void)
 {
     #ifdef PLATFORM_BEAGLEBONE
@@ -100,13 +100,13 @@ void timer_init(void)
         // Clearing pending interrupts
         REG(DTIMER2_TISR) = 0x7;
 
-        // Setting the load value for 2 seconds
-        // f: 24 MHz, T: 2 s, f: 1/2 Hz, N = (24MHz)*2 = 48x10^6
-        // max. counter: 0xFFFFFFFF, counter = 0xFFFFFFFF - 48x10^6 = 0xFD2393FF
-        REG(DTIMER2_TLDR) = 0xFD2393FF;
+        // Setting the load value for 1 second
+        // f: 24 MHz, T: 1 s, f: 1/1 Hz, N = (24MHz)*1 = 24x10^6
+        // max. counter: 0xFFFFFFFF, counter = 0xFFFFFFFF - 24x10^6 = 0xFE91C9FF
+        REG(DTIMER2_TLDR) = 0xFE91C9FF;
 
         // Setting the counter to the same value
-        REG(DTIMER2_TCRR) = 0xFD2393FF;
+        REG(DTIMER2_TCRR) = 0xFE91C9FF;
 
         // Enabling overflow interrupt
         REG(DTIMER2_TIER) = 0x2;
@@ -138,21 +138,23 @@ void timer_irq_handler(void)
 void os_init(void)
 {
     // Welcome message
-    uart_puts("=== 0001Multiprogramming ===\n");
+    uart_puts("\n=== 0001Multiprogramming ===\n");
     uart_puts(" - Carlos Alvarez - 23004004\n");
     uart_puts(" - Gabriel Garcia - 17001171\n");
-    uart_puts("\nStarting...\n\n");
+    uart_puts("\nStarting ...\n\n");
 
     // Disable the watchdog timer to prevent resets
-    uart_puts("Disabling watchdog... ");
+    uart_puts("Disabling watchdog ... ");
     watchdog_disable();
-    uart_puts("Success\n");
+    uart_puts("OK\n");
 
-    uart_puts("Initializing timer... ");
+    uart_puts("Initializing timer ... ");
     timer_init();
-    uart_puts("Success\n");
+    uart_puts("OK\n");
 
-    uart_puts("Enabling interrupts... ");
-    //enable_irq();
-    uart_puts("Success\n");
+    uart_puts("Enabling interrupts ... ");
+    //enable_irq(); // Uncomment this line when building OS (temporary)
+    uart_puts("OK\n");
+
+    uart_puts("\nOS started successfully.\n\n");
 }
