@@ -35,7 +35,6 @@ clear_bss:
 
     // Place a memory barrier
     dsb @ Data Synchronization Barrier
-    dmb @ Data Memory Barrier
     isb @ Instruction Synchronization Barrier
 
     // Set up the ARM vector table via VBAR (Vector Base Address Register)
@@ -43,7 +42,7 @@ clear_bss:
     mcr p15, 0, r0, c12, c0, 0  @ Write the address of the vector table to VBAR
 
     // Jump to the C main function
-    bl main
+    bl os_init
     
     // If main returns, loop forever
 hang:
