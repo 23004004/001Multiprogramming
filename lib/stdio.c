@@ -95,6 +95,11 @@ void PRINT(const char *fmt, ...)
                 uart_puts(s);
                 break;
             }
+            case 'c':{
+                int val = va_arg(args, int);
+                uart_putc((char)val);
+                break;
+            }
             default:
                 /* Unknown specifier: print as-is */
                 uart_putc('%');
