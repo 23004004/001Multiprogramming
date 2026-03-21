@@ -46,7 +46,7 @@ echo "  Assembling root.s..."
 $AS -o bin/root.o root.s
 
 echo "  Compiling os..."
-$CC -c $CFLAGS -o bin/os.o ./../OS/os.c
+$CC -c $CFLAGS -o bin/os.o ./../OS/kernel.c
 
 echo "  Compiling library..."
 $CC -c $CFLAGS -o bin/stdio.o ./../lib/stdio.c

@@ -46,13 +46,13 @@ echo "  Assembling root.s..."
 $AS -o bin/root.o OS/root.s
 
 echo "  Compiling os..."
-$CC -c $CFLAGS -o bin/os.o OS/os.c
+$CC -c $CFLAGS -o bin/kernel.o OS/kernel.c
 
 echo "  Compiling library..."
 $CC -c $CFLAGS -o bin/stdio.o lib/stdio.c
 
 echo "  Linking object files..."
-$LD $LDFLAGS -o bin/os.elf bin/root.o bin/os.o bin/stdio.o
+$LD $LDFLAGS -o bin/os.elf bin/root.o bin/kernel.o bin/stdio.o
 
 echo "  Converting ELF to binary..."
 $OBJCOPY -O binary bin/os.elf bin/os.bin
