@@ -45,20 +45,20 @@ rm -f bin/*.o bin/main.elf bin/main.bin
 echo "  Assembling root.s..."
 $AS -o bin/root.o root.s
 
-echo "  Compiling os..."
-$CC -c $CFLAGS -o bin/kernel.o ./../OS/kernel.c
-
 echo "  Compiling uart driver..."
 $CC -c $CFLAGS -o bin/uart.o ./../drivers/uart.c
 
 echo "  Compiling library..."
 $CC -c $CFLAGS -o bin/stdio.o ./../lib/stdio.c
 
+echo "  Compiling stdlib..."
+$CC -c $CFLAGS -o bin/stdlib.o ./../lib/stdlib.c
+
 echo "  Compiling main.c..."
 $CC -c $CFLAGS -o bin/main.o main.c
 
 echo "  Linking object files..."
-$LD $LDFLAGS -o bin/main.elf bin/root.o bin/kernel.o bin/uart.o bin/stdio.o bin/main.o
+$LD $LDFLAGS -o bin/main.elf bin/root.o bin/uart.o bin/stdio.o bin/stdlib.o bin/main.o
 
 echo "  Converting ELF to binary..."
 $OBJCOPY -O binary bin/main.elf bin/main.bin

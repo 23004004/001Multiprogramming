@@ -1,4 +1,4 @@
-#include "os.h"
+#include "kernel.h"
 #include "../drivers/uart.h"
 #include "../lib/stdio.h"
 
@@ -105,7 +105,7 @@ void os_init(void)
     PRINT("OK\n");
 
     PRINT("Enabling interrupts ... ");
-    //enable_irq(); // Uncomment this line when building OS (temporary)
+    enable_irq();
     PRINT("OK\n");
 
     PRINT("\nOS started successfully.\n\n");

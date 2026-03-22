@@ -54,8 +54,11 @@ $CC -c $CFLAGS -o bin/uart.o drivers/uart.c
 echo "  Compiling library..."
 $CC -c $CFLAGS -o bin/stdio.o lib/stdio.c
 
+echo "  Compiling stdlib..."
+$CC -c $CFLAGS -o bin/stdlib.o lib/stdlib.c
+
 echo "  Linking object files..."
-$LD $LDFLAGS -o bin/os.elf bin/root.o bin/kernel.o bin/uart.o bin/stdio.o
+$LD $LDFLAGS -o bin/os.elf bin/root.o bin/kernel.o bin/uart.o bin/stdio.o bin/stdlib.o
 
 echo "  Converting ELF to binary..."
 $OBJCOPY -O binary bin/os.elf bin/os.bin

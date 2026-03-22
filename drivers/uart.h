@@ -1,7 +1,8 @@
 #ifndef UART_H
 #define UART_H
 
-#include "../OS/os.h"
+// Macro to access memory-mapped registers
+#define REG(x) (*(volatile unsigned int * const)(x))
 
 // ============================================================================
 // UART Register Definitions

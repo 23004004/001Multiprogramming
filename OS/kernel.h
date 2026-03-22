@@ -1,5 +1,5 @@
-#ifndef OS_H
-#define OS_H
+#ifndef KERNEL_H
+#define KERNEL_H
 
 // Macro to access memory-mapped registers
 #define REG(x) (*(volatile unsigned int * const)(x))
