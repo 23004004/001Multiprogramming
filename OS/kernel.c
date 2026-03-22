@@ -186,8 +186,8 @@ void restore_context(unsigned int pid)
         "ldr lr, [%0, #56] \n"  // Restore LR (R14)
         "ldr pc, [%0, #60] \n"  // Restore PC (R15)
         "ldr r1, [%0, #64] \n"
-        "msr SPSR, r1 \n" // Restore SPSR
-        "dsb \n"          // Data Synchronization Barrier
+        "msr SPSR, r1 \n"       // Restore SPSR
+        "dsb \n"                // Data Synchronization Barrier
         :
         : "r"(&pcb[pid])
         : "memory");
@@ -196,7 +196,7 @@ void restore_context(unsigned int pid)
 }
 
 // Function for context switching
-void context_switch(unsigned int pid)
+void context_switch(void)
 {
     save_context(current_process);
     schedule();

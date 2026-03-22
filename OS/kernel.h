@@ -90,7 +90,7 @@ void update_process_state(unsigned int pid, ProcessState new_state);
 void save_context(unsigned int pid);
 void schedule(void);
 void restore_context(unsigned int pid);
-void context_switch(unsigned int pid);
+void context_switch(void);
 
 void print_pcb(void);
 
