@@ -47,4 +47,29 @@
 
 void enable_irq(void);
 
+// ============================================================================
+// Process Control Block (PCB)
+// ============================================================================
+
+typedef enum {
+    PROCESS_READY   = 0,
+    PROCESS_RUNNING = 1,
+} ProcessState;
+
+typedef struct {
+    unsigned int id;          // Process ID (0 = OS, 1 = P1, 2 = P2)
+    unsigned int regs[13];    // R0 - R12
+    unsigned int sp;          // Stack pointer (R13)
+    unsigned int lr;          // Link register (R14)
+    unsigned int pc;          // Program counter (R15)
+    unsigned int spsr;        // Saved Program Status Register
+    ProcessState state;       // READY or RUNNING
+} PCB;
+
+// Number of user processes (P1 and P2)
+#define NUM_PROCESSES 2
+
+extern PCB pcb[NUM_PROCESSES];
+extern int current_process;
+
 #endif
