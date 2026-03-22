@@ -78,7 +78,8 @@ void timer_irq_handler(void)
     REG(INTC_CONTROL) = 0x1;
 #endif
 
-    context_switch(current_process);
+    PRINT("Tick\n");
+    //context_switch();
 }
 
 // ============================================================================
@@ -174,7 +175,6 @@ void schedule(void)
     {
         current_process = next_process;
     }
-    PRINT("Scheduling process %d\n", current_process);
 }
 
 // Function to restore the context of a process
