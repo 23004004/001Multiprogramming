@@ -15,7 +15,7 @@ SECTIONS
         *(.rodata*)
     } > ram
 
-    .data : AT (ADDR(.text) + SIZEOF(.text))
+    .data : AT(ADDR(.text) + SIZEOF(.text))
     {
         __data_start__ = .;
         *(.data*)
