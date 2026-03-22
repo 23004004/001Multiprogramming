@@ -14,7 +14,13 @@
 
 #ifdef PLATFORM_VERSATILEPB // ARM926EJ-S
 
-#elif defined(PLATFORM_BEAGLEBONE) // ARM Cortex-A8
+    // VesatilePB base address
+    #define MEM_ADDR        0x00000000
+
+#elif defined(PLATFORM_BEAGLEBONE) // ARM Cortex-A8 (AM335x)
+
+    // BeagleBone Black base address
+    #define MEM_ADDR        0x82000000
 
     // BeagleBone Black watchdog timer base address
     #define WDT1_BASE       0x44E35000
@@ -66,10 +72,10 @@ typedef struct {
     ProcessState state;     // READY or RUNNING
 } PCB;
 
-// Number of user processes (P1 and P2)
-#define NUM_PROCESSES 2
+// Number of user processes (OS, P1 and P2)
+#define NUM_PROCESSES 3
 
 extern PCB pcb[NUM_PROCESSES];
-extern int current_process;
+extern unsigned int process_count;
 
 #endif

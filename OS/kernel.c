@@ -8,16 +8,16 @@
 // Function to disable the watchdog timer
 void watchdog_disable(void)
 {
-    #ifdef PLATFORM_BEAGLEBONE
-        // Write 0xAAAA then 0x5555 to WDT1_WSPR, waiting for WDT1_WWPS between writes
-        REG(WDT1_WSPR) = 0xAAAA;
-        while (REG(WDT1_WWPS) != 0)
-            ;
+#ifdef PLATFORM_BEAGLEBONE
+    // Write 0xAAAA then 0x5555 to WDT1_WSPR, waiting for WDT1_WWPS between writes
+    REG(WDT1_WSPR) = 0xAAAA;
+    while (REG(WDT1_WWPS) != 0)
+        ;
 
-        REG(WDT1_WSPR) = 0x5555;
-        while (REG(WDT1_WWPS) != 0)
-            ;
-    #endif
+    REG(WDT1_WSPR) = 0x5555;
+    while (REG(WDT1_WWPS) != 0)
+        ;
+#endif
 }
 
 // ============================================================================
@@ -27,101 +27,108 @@ void watchdog_disable(void)
 // Function to initialize the timer to generate an interrupt every second
 void timer_init(void)
 {
-    #ifdef PLATFORM_BEAGLEBONE
-        // Enabling the timer clock
-        REG(CM_PER_TIMER2_CLKCTRL) = 0x2;
+#ifdef PLATFORM_BEAGLEBONE
+    // Enabling the timer clock
+    REG(CM_PER_TIMER2_CLKCTRL) = 0x2;
 
-        // Unmasking IRQ 68
-        // Each register of INTC_MIR_CLEAR2 belongs to an IRQ
-        // There are 3 INTC_MIR, so 96 IRQ
-        // bit 0 of INTC_MIR_CLEAR2 -> IRQ 64,
-        // bit 1 of INTC_MIR_CLEAR2 -> IRQ 65,
-        // bit 2 of INTC_MIR_CLEAR2 -> IRQ 66,
-        // bit 3 of INTC_MIR_CLEAR2 -> IRQ 67,
-        // bit 4 of INTC_MIR_CLEAR2 -> IRQ 68,
-        // etc ...
-        REG(INTC_MIR_CLEAR2) = 0x10;
+    // Unmasking IRQ 68
+    // Each register of INTC_MIR_CLEAR2 belongs to an IRQ
+    // There are 3 INTC_MIR, so 96 IRQ
+    // bit 0 of INTC_MIR_CLEAR2 -> IRQ 64,
+    // bit 1 of INTC_MIR_CLEAR2 -> IRQ 65,
+    // bit 2 of INTC_MIR_CLEAR2 -> IRQ 66,
+    // bit 3 of INTC_MIR_CLEAR2 -> IRQ 67,
+    // bit 4 of INTC_MIR_CLEAR2 -> IRQ 68,
+    // etc ...
+    REG(INTC_MIR_CLEAR2) = 0x10;
 
-        // Setting interrupt priority to 0x0
-        REG(INTC_ILR68) = 0x0;
+    // Setting interrupt priority to 0x0
+    REG(INTC_ILR68) = 0x0;
 
-        // Stopping the timer
-        REG(DTIMER2_TCLR) = 0x0;
+    // Stopping the timer
+    REG(DTIMER2_TCLR) = 0x0;
 
-        // Clearing pending interrupts
-        REG(DTIMER2_TISR) = 0x7;
+    // Clearing pending interrupts
+    REG(DTIMER2_TISR) = 0x7;
 
-        // Setting the load value for 1 second
-        // f: 24 MHz, T: 1 s, f: 1/1 Hz, N = (24MHz)*1 = 24x10^6
-        // max. counter: 0xFFFFFFFF, counter = 0xFFFFFFFF - 24x10^6 = 0xFE91C9FF
-        REG(DTIMER2_TLDR) = 0xFE91C9FF;
+    // Setting the load value for 1 second
+    // f: 24 MHz, T: 1 s, f: 1/1 Hz, N = (24MHz)*1 = 24x10^6
+    // max. counter: 0xFFFFFFFF, counter = 0xFFFFFFFF - 24x10^6 = 0xFE91C9FF
+    REG(DTIMER2_TLDR) = 0xFE91C9FF;
 
-        // Setting the counter to the same value
-        REG(DTIMER2_TCRR) = 0xFE91C9FF;
+    // Setting the counter to the same value
+    REG(DTIMER2_TCRR) = 0xFE91C9FF;
 
-        // Enabling overflow interrupt
-        REG(DTIMER2_TIER) = 0x2;
+    // Enabling overflow interrupt
+    REG(DTIMER2_TIER) = 0x2;
 
-        // Starting the timer in auto-reload mode
-        REG(DTIMER2_TCLR) = 0x3;
-    #endif
+    // Starting the timer in auto-reload mode
+    REG(DTIMER2_TCLR) = 0x3;
+#endif
 }
 
 // Function to handle timer interrupts
 void timer_irq_handler(void)
 {
-    #ifdef PLATFORM_BEAGLEBONE
-        // Clearing the timer interrupt flag
-        REG(DTIMER2_TISR) = 0x2;
+#ifdef PLATFORM_BEAGLEBONE
+    // Clearing the timer interrupt flag
+    REG(DTIMER2_TISR) = 0x2;
 
-        // Acknowledging the interrupt to the controller
-        REG(INTC_CONTROL) = 0x1;
-    #endif
+    // Acknowledging the interrupt to the controller
+    REG(INTC_CONTROL) = 0x1;
+#endif
 
     // Printing "Tick\n" via UART
     PRINT("Tick\n");
 }
 
 // ============================================================================
-// Process Control Blocks
+// Process Control Block (PCB) and Scheduler
 // ============================================================================
 
 PCB pcb[NUM_PROCESSES];
-int current_process = 0;
+unsigned int process_count = 0;
 
 // Function to Initialize PCBs
-void pcb_init(void){
-    // OS
-    pcb[0].pid   = 0;
-    pcb[0].pc    = 0x82000000;  // OS entry point
-    pcb[0].sp    = 0x82010000;  // OS stack top (base + 64K)
-    pcb[0].lr    = 0x82000000;  // LR = entry point for first run
-    pcb[0].spsr  = 0x9F;        // System mode, IRQs enabled
-    pcb[0].state = PROCESS_READY;
-    for (int i = 0; i < 13; i++) pcb[0].regs[i] = 0;
+void pcb_init(unsigned int pid)
+{
+    pcb[pid].pid = pid;
+    pcb[pid].pc = MEM_ADDR + pid * 0x100000;           // Entry point
+    pcb[pid].sp = MEM_ADDR + pid * 0x100000 + 0x10000; // Stack top (base + 64K)
+    pcb[pid].lr = 0x0;
+    pcb[pid].spsr = 0x0;
+    pcb[pid].state = PROCESS_READY;
 
-    // P1
-    pcb[1].pid   = 1;
-    pcb[1].pc    = 0x82100000;  // P1 entry point
-    pcb[1].sp    = 0x82110000;  // P1 stack top (base + 64K)
-    pcb[1].lr    = 0x82100000;  // LR = entry point for first run
-    pcb[1].spsr  = 0x0;
-    pcb[1].state = PROCESS_READY;
-    for (int i = 0; i < 13; i++) pcb[1].regs[i] = 0;
-
-    // P2
-    pcb[2].pid   = 2;
-    pcb[2].pc    = 0x82200000;  // P2 entry point
-    pcb[2].sp    = 0x82210000;  // P2 stack top (base + 64K)
-    pcb[2].lr    = 0x82200000;  // LR = entry point for first run
-    pcb[2].spsr  = 0x0;
-    pcb[2].state = PROCESS_READY;
-    for (int i = 0; i < 13; i++) pcb[2].regs[i] = 0;
+    for (int i = 0; i < 13; i++)
+        pcb[pid].regs[i] = 0x0;
 
     // Memory barrier to ensure PCB writes are visible before any context switch
-    asm volatile ("dsb" ::: "memory");
+    asm volatile("dsb" ::: "memory");
 }
 
+// Function to setup the stack frame of a process
+void setup_process_stack(unsigned int pid)
+{
+    // Reserve a contiguous region for the process stack
+    pcb[pid].sp = pcb[pid].sp + 0x2000; // 8 KB stack
+
+    // Building a saved context at the top of the region:
+    // Set LR to the process entry point
+    pcb[pid].lr = MEM_ADDR + pid * 0x100000;
+
+    // Set the process SP to the address at the lowest word of this frame
+    pcb[pid].sp = pcb[pid].sp - 14 * sizeof(unsigned int);
+
+    // Set the PC to the process entry point
+    pcb[pid].pc = MEM_ADDR + pid * 0x100000;
+}
+
+// Function to create a process
+void create_process(unsigned int pid)
+{
+    pcb_init(pid);
+    setup_process_stack(pid);
+}
 
 // ============================================================================
 // Main Function
@@ -133,7 +140,7 @@ void os_init(void)
     PRINT("\n=== 0001Multiprogramming ===\n");
     PRINT(" - Carlos Alvarez - 23004004\n");
     PRINT(" - Gabriel Garcia - 17001171\n");
-    PRINT("\nStarting ...\n\n");
+    PRINT("\nStarting Kernel ...\n\n");
 
     // Disable the watchdog timer to prevent resets
     PRINT("Disabling watchdog ... ");
@@ -148,9 +155,14 @@ void os_init(void)
     enable_irq();
     PRINT("OK\n");
 
-    PRINT("Initializing PCBs ... ");
-    pcb_init();
+    PRINT("\nKernel started successfully.\n\n");
+
+    PRINT("Starting OS ... ");
+    create_process(process_count++); // OS process
     PRINT("OK\n");
 
-    PRINT("\nOS started successfully.\n\n");
+    PRINT("Creating user processes ... ");
+    create_process(process_count++); // User process 1
+    create_process(process_count++); // User process 2
+    PRINT("OK\n");
 }
