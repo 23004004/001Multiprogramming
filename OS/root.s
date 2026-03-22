@@ -47,7 +47,7 @@ clear_bss:
     mcr p15, 0, r0, c12, c0, 0  @ Write the address of the vector table to VBAR
 
     // Jump to the C main function
-    bl os_init
+    bl kernel_init
     
     // If main returns, loop forever
 hang:
@@ -66,9 +66,9 @@ data_handler:
     b hang
 
 irq_handler:
-    push {r0-r12, lr}       @ Save all registers 
+    push {r0-r12, lr}       @ Save all registers
     bl timer_irq_handler    @ Call C handler 
-    pop {r0-r12, lr}        @ Restore registers 
+    pop {r0-r12, lr}        @ Restore registers
     subs pc, lr, #4         @ Return from interrupt 
     b hang
 
