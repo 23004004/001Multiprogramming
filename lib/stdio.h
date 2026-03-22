@@ -1,7 +1,7 @@
 #ifndef STDIO_H
 #define STDIO_H
 
-#include "../OS/os.h"
+#include "../drivers/uart.h"
 
 #include <stdarg.h> // For dynamic argument handling
 

@@ -1,4 +1,6 @@
 #include "os.h"
+#include "../drivers/uart.h"
+#include "../lib/stdio.h"
 
 // ============================================================================
 // Watchdog Timer Functions
@@ -17,56 +19,6 @@ void watchdog_disable(void)
         while (REG(WDT1_WWPS) != 0)
             ;
     #endif
-}
-
-// ============================================================================
-// UART Functions
-// ============================================================================
-
-// Function to send a single character via UART
-void uart_putc(char c)
-{
-    // Wait until there is space in the FIFO
-    while ((REG(UART0_FR) & UART0_FR_TXFE) == 0)
-        ;
-    REG(UART0_DR) = c;
-}
-
-// Function to receive a single character via UART
-char uart_getc(void)
-{
-    // Wait until data is available
-    while ((REG(UART0_FR) & UART0_FR_RXFE) != 0)
-        ;
-    return (char)(REG(UART0_DR) & 0xFF);
-}
-
-// Function to send a string via UART
-void uart_puts(const char *s)
-{
-    while (*s)
-    {
-        uart_putc(*s++);
-    }
-}
-
-// Function to receive a line of input via UART
-void uart_gets(char *buffer, int max_length)
-{
-    int i = 0;
-    char c;
-    while (i < max_length - 1)
-    { // Leave space for null terminator
-        c = uart_getc();
-        if (c == '\n' || c == '\r')
-        {
-            uart_putc('\n'); // Echo newline
-            break;
-        }
-        uart_putc(c); // Echo character
-        buffer[i++] = c;
-    }
-    buffer[i] = '\0'; // Null terminate the string
 }
 
 // ============================================================================
@@ -128,7 +80,7 @@ void timer_irq_handler(void)
     #endif
 
     // Printing "Tick\n" via UART
-    uart_puts("Tick\n");
+    PRINT("Tick\n");
 }
 
 // ============================================================================
@@ -138,23 +90,23 @@ void timer_irq_handler(void)
 void os_init(void)
 {
     // Welcome message
-    uart_puts("\n=== 0001Multiprogramming ===\n");
-    uart_puts(" - Carlos Alvarez - 23004004\n");
-    uart_puts(" - Gabriel Garcia - 17001171\n");
-    uart_puts("\nStarting ...\n\n");
+    PRINT("\n=== 0001Multiprogramming ===\n");
+    PRINT(" - Carlos Alvarez - 23004004\n");
+    PRINT(" - Gabriel Garcia - 17001171\n");
+    PRINT("\nStarting ...\n\n");
 
     // Disable the watchdog timer to prevent resets
-    uart_puts("Disabling watchdog ... ");
+    PRINT("Disabling watchdog ... ");
     watchdog_disable();
-    uart_puts("OK\n");
+    PRINT("OK\n");
 
-    uart_puts("Initializing timer ... ");
+    PRINT("Initializing timer ... ");
     timer_init();
-    uart_puts("OK\n");
+    PRINT("OK\n");
 
-    uart_puts("Enabling interrupts ... ");
+    PRINT("Enabling interrupts ... ");
     //enable_irq(); // Uncomment this line when building OS (temporary)
-    uart_puts("OK\n");
+    PRINT("OK\n");
 
-    uart_puts("\nOS started successfully.\n\n");
+    PRINT("\nOS started successfully.\n\n");
 }
