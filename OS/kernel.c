@@ -89,25 +89,34 @@ void timer_irq_handler(void)
 PCB pcb[NUM_PROCESSES];
 int current_process = 0;
 
-//Function to Initialize PCBs
-void set_basic_data(void){
-    // P1
-    pcb[0].id    = 1;
-    pcb[0].pc    = 0x82100000;  // P1 entry point
-    pcb[0].sp    = 0x82110000;  // P1 stack top (base + 64K)
-    pcb[0].lr    = 0x82100000;  // LR = entry point for first run
-    pcb[0].spsr  = 0x1F;        // System mode, IRQs enabled
+// Function to Initialize PCBs
+void pcb_init(void){
+    // OS
+    pcb[0].pid   = 0;
+    pcb[0].pc    = 0x82000000;  // OS entry point
+    pcb[0].sp    = 0x82010000;  // OS stack top (base + 64K)
+    pcb[0].lr    = 0x82000000;  // LR = entry point for first run
+    pcb[0].spsr  = 0x9F;        // System mode, IRQs enabled
     pcb[0].state = PROCESS_READY;
     for (int i = 0; i < 13; i++) pcb[0].regs[i] = 0;
 
-    // P2
-    pcb[1].id    = 2;
-    pcb[1].pc    = 0x82200000;  // P2 entry point
-    pcb[1].sp    = 0x82210000;  // P2 stack top (base + 64K)
-    pcb[1].lr    = 0x82200000;  // LR = entry point for first run
-    pcb[1].spsr  = 0x1F;        // System mode, IRQs enabled
+    // P1
+    pcb[1].pid   = 1;
+    pcb[1].pc    = 0x82100000;  // P1 entry point
+    pcb[1].sp    = 0x82110000;  // P1 stack top (base + 64K)
+    pcb[1].lr    = 0x82100000;  // LR = entry point for first run
+    pcb[1].spsr  = 0x0;
     pcb[1].state = PROCESS_READY;
     for (int i = 0; i < 13; i++) pcb[1].regs[i] = 0;
+
+    // P2
+    pcb[2].pid   = 2;
+    pcb[2].pc    = 0x82200000;  // P2 entry point
+    pcb[2].sp    = 0x82210000;  // P2 stack top (base + 64K)
+    pcb[2].lr    = 0x82200000;  // LR = entry point for first run
+    pcb[2].spsr  = 0x0;
+    pcb[2].state = PROCESS_READY;
+    for (int i = 0; i < 13; i++) pcb[2].regs[i] = 0;
 
     // Memory barrier to ensure PCB writes are visible before any context switch
     asm volatile ("dsb" ::: "memory");
@@ -140,7 +149,7 @@ void os_init(void)
     PRINT("OK\n");
 
     PRINT("Initializing PCBs ... ");
-    set_basic_data();
+    pcb_init();
     PRINT("OK\n");
 
     PRINT("\nOS started successfully.\n\n");
