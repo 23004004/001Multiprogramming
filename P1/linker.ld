@@ -2,30 +2,34 @@ ENTRY(_start)
 
 MEMORY
 {
-    ram : ORIGIN = MEM_ADDR, LENGTH = 8K
+    ram : ORIGIN = MEM_ADDR, LENGTH = 256K
 }
 
 SECTIONS
 {
-    . = ORIGIN(ram); /* Starting address in RAM */
+    . = ORIGIN(ram);
 
     .text :
     {
         *(.text*)
-    }
+        *(.rodata*)
+    } > ram
 
-    .data : AT (ADDR(.text) + SIZEOF(.text))
+    .data : AT(ADDR(.text) + SIZEOF(.text))
     {
+        __data_start__ = .;
         *(.data*)
-    }
+        __data_end__ = .;
+    } > ram
 
     .bss :
     {
-        __bss_start = .;
+        __bss_start__ = .;
         *(.bss*)
-        __bss_end = .;
-    }
+        *(COMMON)
+        __bss_end__ = .;
+    } > ram
 
-    _stack_bottom = __bss_end;
+    _stack_bottom = __bss_end__;
     _stack_top = ORIGIN(ram) + LENGTH(ram);
 }
