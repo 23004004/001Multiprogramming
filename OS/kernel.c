@@ -1,13 +1,5 @@
 #include "kernel.h"
-#include "../drivers/uart.h"
 #include "../lib/stdio.h"
-
-// ============================================================================
-// Process Control Block Array
-// ============================================================================
-
-PCB pcb[NUM_PROCESSES];
-int current_process = 0;
 
 // ============================================================================
 // Watchdog Timer Functions
@@ -90,6 +82,13 @@ void timer_irq_handler(void)
     PRINT("Tick\n");
 }
 
+// ============================================================================
+// Process Control Blocks
+// ============================================================================
+
+PCB pcb[NUM_PROCESSES];
+int current_process = 0;
+
 //Function to Initialize PCBs
 void set_basic_data(void){
     // P1
@@ -136,15 +135,12 @@ void os_init(void)
     timer_init();
     PRINT("OK\n");
 
-    // -------------------------------------------------------------------------
-    // Initialize PCBs
-    // -------------------------------------------------------------------------
-    PRINT("Initializing PCBs ... ");
-    set_basic_data();
-    PRINT("OK\n");
-
     PRINT("Enabling interrupts ... ");
     enable_irq();
+    PRINT("OK\n");
+
+    PRINT("Initializing PCBs ... ");
+    set_basic_data();
     PRINT("OK\n");
 
     PRINT("\nOS started successfully.\n\n");
