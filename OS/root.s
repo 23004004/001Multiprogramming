@@ -54,24 +54,33 @@ hang:
     b hang
 
 undefined_handler:
+    bl print_registers
+    bl print_pcb
     b hang
 
 swi_handler:
+    bl print_registers
+    bl print_pcb
     b hang
 
 prefetch_handler:
+    bl print_registers
+    bl print_pcb
     b hang
 
 data_handler:
+    bl print_registers
+    bl print_pcb
     b hang
 
 irq_handler:
     bl timer_irq_handler
-    ldr r1, =0x821000000 @ Just for testing, remove later
-    movs pc, r1
+    bl context_switch
     b hang
 
 fiq_handler:
+    bl print_registers
+    bl print_pcb
     b hang
 
 .globl enable_irq
