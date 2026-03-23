@@ -7,7 +7,7 @@ _start:
 b reset_handler
 
 // ARM Vector Table
-.align 5                 @ Align to 32 bytes (2^5)
+.align 5                 @ Align to 32 bits (2^5)
 vector_table:
     b reset_handler      @ 0x00: Reset
     b undefined_handler  @ 0x04: Undefined Instruction
@@ -78,14 +78,22 @@ fiq_handler:
 .globl enable_irq
 enable_irq:
     mrs r0, CPSR
-    mov r1, #0xFFFFFFFFFFFFFF7F
+    mov r1, #0xFF7F
     and r0, r0, r1
     msr CPSR, r0    @ Enable IRQs by clearing the I bit in CPSR
     bx lr
 
-// Stack space allocation
+.globl disable_irq
+disable_irq:
+    mrs r0, CPSR
+    mov r1, #0x80
+    orr r0, r0, r1
+    msr CPSR, r0    @ Disable IRQs by setting the I bit in CPSR
+    bx lr
+
+// Reserve a contiguous region for the process stack
 .section .bss
-.align 4            @ Align to 16 bytes (2^4)
+.align 4            @ Align to 16 bits (2^4)
 _stack_bottom:
     .skip 0x2000    @ 8KB stack space
 _stack_top:
