@@ -24,12 +24,12 @@ OBJCOPY="arm-none-eabi-objcopy"
 case "$TARGET" in
   versatilepb)
     CFLAGS="-DPLATFORM_VERSATILEPB"
-    LDFLAGS="-T OS/linker.ld --defsym=MEM_ADDR=0x00000000"
+    LDFLAGS="-T linker.ld --defsym=MEM_ADDR=0x00000000"
     RUN_CMD="qemu-system-arm -M versatilepb -nographic -kernel bin/os.elf"
     ;;
   beaglebone)
     CFLAGS="-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard -DPLATFORM_BEAGLEBONE"
-    LDFLAGS="-T OS/linker.ld --defsym=MEM_ADDR=0x82000000"
+    LDFLAGS="-T linker.ld --defsym=MEM_ADDR=0x82000000"
     RUN_CMD=""  # none, since we will run on real hardware
     ;;
   *)
@@ -43,19 +43,19 @@ echo "  Cleaning up previous build files..."
 rm -f bin/*.o bin/os.elf bin/os.bin
 
 echo "  Assembling root.s..."
-$AS -o bin/root.o OS/root.s
+$AS -o bin/root.o root.s
 
 echo "  Compiling kernel..."
-$CC -c $CFLAGS -o bin/kernel.o OS/kernel.c
+$CC -c $CFLAGS -o bin/kernel.o kernel.c
 
 echo "  Compiling uart driver..."
-$CC -c $CFLAGS -o bin/uart.o drivers/uart.c
+$CC -c $CFLAGS -o bin/uart.o ../drivers/uart.c
 
 echo "  Compiling library..."
-$CC -c $CFLAGS -o bin/stdio.o lib/stdio.c
+$CC -c $CFLAGS -o bin/stdio.o ../lib/stdio.c
 
 echo "  Compiling stdlib..."
-$CC -c $CFLAGS -o bin/stdlib.o lib/stdlib.c
+$CC -c $CFLAGS -o bin/stdlib.o ../lib/stdlib.c
 
 echo "  Linking object files..."
 $LD $LDFLAGS -o bin/os.elf bin/root.o bin/kernel.o bin/uart.o bin/stdio.o bin/stdlib.o
