@@ -61,3 +61,32 @@ void itoa(int num, char *buffer) {
         end--;
     }
 }
+
+// Function to convert integer to hex
+void itox(int num, char *buffer)
+{
+    unsigned int u_num = (unsigned int)num;
+    const char hex_digits[] = "0123456789abcdef";
+    char temp[9];
+    int i = 0;
+
+    if (u_num == 0)
+    {
+        buffer[0] = '0';
+        buffer[1] = '\0';
+        return;
+    }
+
+    while (i < 8)
+    {
+        temp[i++] = hex_digits[u_num % 16];
+        u_num /= 16;
+    }
+
+    // Reverse the string
+    for (int j = 0; j < i; j++)
+    {
+        buffer[j] = temp[i - j - 1];
+    }
+    buffer[i] = '\0';
+}
