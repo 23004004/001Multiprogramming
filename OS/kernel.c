@@ -78,8 +78,7 @@ void timer_irq_handler(void)
     REG(INTC_CONTROL) = 0x1;
 #endif
 
-    PRINT("Tick\n");
-    // context_switch(); // Uncomment when working
+    PRINT("...\n");
 }
 
 // ============================================================================
@@ -140,19 +139,20 @@ void create_process(unsigned int pid)
 // Function to save the context of the current process
 void save_context(unsigned int pid)
 {
+    update_process_state(pid, PROCESS_WAITING);
     asm volatile(
-        "stmia %0, {r0-r12} \n" // Save R0-R12
-        "str sp, [%0, #52] \n"  // Save SP (R13)
-        "str lr, [%0, #56] \n"  // Save LR (R14)
-        "str pc, [%0, #60] \n"  // Save PC (R15)
-        "mrs r1, SPSR \n"
-        "str r1, [%0, #64] \n" // Save SPSR
-        "dsb \n"               // Data Synchronization Barrier
+        "stm %0, {r0-r12} \n"  // Save R0-R12
+        "str sp, [%0, #52] \n" // Save SP (R13)
+        "str lr, [%0, #56] \n" // Save LR (R14)
+        "mov r1, lr \n"        // Save PC (R15)
+        "subs r1, r1, #4 \n"   // PC = LR_irq - 4
+        "str r1, [%0, #60] \n"
+        "mrs r2, SPSR \n" // Save SPSR
+        "str r2, [%0, #64] \n"
+        "dsb \n" // Data Synchronization Barrier
         :
         : "r"(&pcb[pid])
         : "memory");
-
-    update_process_state(pid, PROCESS_WAITING);
 }
 
 // Fuction to choose the next process to run (round-robin scheduler)
@@ -171,23 +171,24 @@ void schedule(void)
     if (pcb[next_process].state == PROCESS_READY || pcb[next_process].state == PROCESS_WAITING)
     {
         current_process = next_process;
+        update_process_state(current_process, PROCESS_READY);
     }
 }
 
 // Function to restore the context of a process
 void restore_context(unsigned int pid)
 {
+    update_process_state(pid, PROCESS_RUNNING);
     asm volatile(
         "ldr r1, [%0, #64] \n" // Restore SPSR
         "msr SPSR, r1 \n"
-        "ldr r2, [%0, #60] \n" // Restore LR (R14)
-        "mov lr, r2 \n"
-        "ldmia %0, {r0-r12} \n" // Restore R0-R12
+        "ldr r1, [%0, #60] \n" // Restore LR (R14)
+        "adds lr, r1, #4 \n"   // LR_irq = saved_PC + 4
+        "ldm %0, {r0-r12} \n"  // Restore R0-R12
+        "subs pc, lr, #4 \n"   // Running the other process
         :
         : "r"(&pcb[pid])
         : "memory");
-
-    update_process_state(pid, PROCESS_RUNNING);
 }
 
 // Function for context switching
@@ -256,7 +257,7 @@ void os_init(void)
     PRINT("Creating user processes ... ");
     create_process(process_count++); // User process 1
     create_process(process_count++); // User process 2
-    PRINT("OK\n");
+    PRINT("OK\n\n");
 }
 
 // Function to initialize the kernel
