@@ -79,7 +79,7 @@ void timer_irq_handler(void)
 #endif
 
     PRINT("Tick\n");
-    //context_switch();
+    // context_switch(); // Uncomment when working
 }
 
 // ============================================================================
@@ -103,8 +103,8 @@ void pcb_init(unsigned int pid)
     pcb[pid].pid = pid;
     pcb[pid].pc = MEM_ADDR + pid * 0x100000;           // Entry point
     pcb[pid].sp = MEM_ADDR + pid * 0x100000 + 0x10000; // Stack top (base + 64K)
-    pcb[pid].lr = 0x0;
-    pcb[pid].spsr = 0x0;
+    pcb[pid].lr = MEM_ADDR + pid * 0x100000;           // Entry point
+    pcb[pid].spsr = 0x13;                              // SVC mode, IRQs enabled
 
     for (int i = 0; i < 13; i++)
         pcb[pid].regs[i] = 0x0;
@@ -118,15 +118,12 @@ void pcb_init(unsigned int pid)
 // Function to setup the stack frame of a process
 void setup_process_stack(unsigned int pid)
 {
-    // Reserve a contiguous region for the process stack
-    // pcb[pid].sp = pcb[pid].sp + 0x2000; // 8 KB stack
-
     // Building a saved context at the top of the region:
     // Set LR to the process entry point
     pcb[pid].lr = MEM_ADDR + pid * 0x100000;
 
     // Set the process SP to the address at the lowest word of this frame
-    pcb[pid].sp = MEM_ADDR + pid * 0x100000;
+    pcb[pid].sp = MEM_ADDR + pid * 0x100000 + 0x10000 - 14 * sizeof(unsigned int);
 
     // Set the PC to the process entry point
     pcb[pid].pc = MEM_ADDR + pid * 0x100000;
@@ -181,13 +178,11 @@ void schedule(void)
 void restore_context(unsigned int pid)
 {
     asm volatile(
+        "ldr r1, [%0, #64] \n" // Restore SPSR
+        "msr SPSR, r1 \n"
+        "ldr r2, [%0, #60] \n" // Restore LR (R14)
+        "mov lr, r2 \n"
         "ldmia %0, {r0-r12} \n" // Restore R0-R12
-        "ldr sp, [%0, #52] \n"  // Restore SP (R13)
-        "ldr lr, [%0, #56] \n"  // Restore LR (R14)
-        "ldr pc, [%0, #60] \n"  // Restore PC (R15)
-        "ldr r1, [%0, #64] \n"
-        "msr SPSR, r1 \n" // Restore SPSR
-        "dsb \n"          // Data Synchronization Barrier
         :
         : "r"(&pcb[pid])
         : "memory");
@@ -218,6 +213,33 @@ void print_pcb(void)
         PRINT("R%d: 0x%x\n", i, pcb[current_process].regs[i]);
     }
     PRINT("LR: 0x%x, SPSR: 0x%x\n\n", pcb[current_process].lr, pcb[current_process].spsr);
+}
+
+void print_registers(void)
+{
+    unsigned int regs[18];
+    asm volatile(
+        "stmia %0, {r0-r12} \n"
+        "str sp, [%0, #52] \n" // Save SP (R13)
+        "str lr, [%0, #56] \n" // Save LR (R14)
+        "str pc, [%0, #60] \n" // Save PC (R15)
+        "mrs r1, SPSR \n"
+        "str r1, [%0, #64] \n" // Save SPSR
+        "mrs r1, CPSR \n"
+        "str r1, [%0, #68] \n" // Save CPSR
+        :
+        : "r"(regs)
+        : "memory");
+
+    PRINT("\n=== Current Registers ===\n");
+
+    for (int i = 0; i < 13; i++)
+    {
+        PRINT("R%d: 0x%x\n", i, regs[i]);
+    }
+
+    PRINT("SP: 0x%x, LR: 0x%x, PC: 0x%x\n", regs[13], regs[14], regs[15]);
+    PRINT("SPSR: 0x%x, CPSR: 0x%x\n\n", regs[16], regs[17]);
 }
 
 // ============================================================================

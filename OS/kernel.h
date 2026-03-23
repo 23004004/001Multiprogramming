@@ -100,5 +100,6 @@ void context_switch(void);
 // ============================================================================
 
 void print_pcb(void);
+void print_registers(void);
 
 #endif
