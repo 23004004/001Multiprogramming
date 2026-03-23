@@ -1,6 +1,6 @@
 #include "../lib/stdio.h"
 
-void main(void)
+void process_2(void)
 {
     char c = 'a';
 

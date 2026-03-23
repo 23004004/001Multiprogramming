@@ -6,7 +6,7 @@ b reset
 
 reset:
 ldr sp, =_stack_top   @ Set up stack pointer (within RAM)
-bl main               @ Call the main function
+bl process_2          @ Call the main function
 loop:
 b loop                @ Infinite loop to prevent exit
 
