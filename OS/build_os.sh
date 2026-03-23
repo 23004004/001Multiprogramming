@@ -63,6 +63,9 @@ $LD $LDFLAGS -o bin/os.elf bin/root.o bin/kernel.o bin/uart.o bin/stdio.o bin/st
 echo "  Converting ELF to binary..."
 $OBJCOPY -O binary bin/os.elf bin/os.bin
 
+echo "  Disassembling for debugging..."
+arm-none-eabi-objdump -d bin/os.elf > bin/disasm.txt
+
 if [ "$TARGET" = "versatilepb" ]; then
   echo "  Build complete for VerstatilePB. Run with: $RUN_CMD"
 else
