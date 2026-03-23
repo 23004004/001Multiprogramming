@@ -5,7 +5,7 @@
 // ============================================================================
 
 // Function to print formatted output based on format specifier
-// (%d for integers, %s for strings)
+// (%d for integers, %c for characters, %s for strings, %x for hexadecimal)
 void PRINT(const char *fmt, ...)
 {
     va_list args;
@@ -27,15 +27,23 @@ void PRINT(const char *fmt, ...)
                 uart_puts(buf);
                 break;
             }
+            case 'c':
+            {
+                int val = va_arg(args, int);
+                uart_putc((char)val);
+                break;
+            }
             case 's':
             {
                 const char *s = va_arg(args, const char *);
                 uart_puts(s);
                 break;
             }
-            case 'c':{
+            case 'x':
+            {
                 int val = va_arg(args, int);
-                uart_putc((char)val);
+                itox(val, buf);
+                uart_puts(buf);
                 break;
             }
             default:
