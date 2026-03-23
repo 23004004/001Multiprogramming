@@ -66,10 +66,9 @@ data_handler:
     b hang
 
 irq_handler:
-    push {r0-r12, lr}       @ Save all registers
-    bl timer_irq_handler    @ Call C handler 
-    pop {r0-r12, lr}        @ Restore registers
-    subs pc, lr, #4         @ Return from interrupt 
+    bl timer_irq_handler
+    ldr r1, =0x821000000 @ Just for testing, remove later
+    movs pc, r1
     b hang
 
 fiq_handler:
@@ -78,7 +77,7 @@ fiq_handler:
 .globl enable_irq
 enable_irq:
     mrs r0, CPSR
-    mov r1, #0xFF7F
+    mov r1, #0xFFFFFF7F
     and r0, r0, r1
     msr CPSR, r0    @ Enable IRQs by clearing the I bit in CPSR
     bx lr
