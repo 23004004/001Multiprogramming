@@ -69,7 +69,7 @@ typedef enum
 
 typedef struct
 {
-    unsigned int pid;      // Process ID (0 = OS, 1 = P1, 2 = P2)
+    unsigned int pid;      // Process ID
     unsigned int regs[13]; // R0 - R12
     unsigned int sp;       // Stack pointer (R13)
     unsigned int lr;       // Link register (R14)
@@ -91,6 +91,10 @@ void save_context(unsigned int pid);
 void schedule(void);
 void restore_context(unsigned int pid);
 void context_switch(void);
+
+// ============================================================================
+// Debugging Functions
+// ============================================================================
 
 void print_pcb(void);
 

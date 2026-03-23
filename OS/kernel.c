@@ -119,14 +119,14 @@ void pcb_init(unsigned int pid)
 void setup_process_stack(unsigned int pid)
 {
     // Reserve a contiguous region for the process stack
-    pcb[pid].sp = pcb[pid].sp + 0x2000; // 8 KB stack
+    // pcb[pid].sp = pcb[pid].sp + 0x2000; // 8 KB stack
 
     // Building a saved context at the top of the region:
     // Set LR to the process entry point
     pcb[pid].lr = MEM_ADDR + pid * 0x100000;
 
     // Set the process SP to the address at the lowest word of this frame
-    pcb[pid].sp = pcb[pid].sp - 14 * sizeof(unsigned int);
+    pcb[pid].sp = MEM_ADDR + pid * 0x100000;
 
     // Set the PC to the process entry point
     pcb[pid].pc = MEM_ADDR + pid * 0x100000;
@@ -186,8 +186,8 @@ void restore_context(unsigned int pid)
         "ldr lr, [%0, #56] \n"  // Restore LR (R14)
         "ldr pc, [%0, #60] \n"  // Restore PC (R15)
         "ldr r1, [%0, #64] \n"
-        "msr SPSR, r1 \n"       // Restore SPSR
-        "dsb \n"                // Data Synchronization Barrier
+        "msr SPSR, r1 \n" // Restore SPSR
+        "dsb \n"          // Data Synchronization Barrier
         :
         : "r"(&pcb[pid])
         : "memory");
@@ -203,17 +203,21 @@ void context_switch(void)
     restore_context(current_process);
 }
 
+// ============================================================================
+// Debugging Functions
+// ============================================================================
+
 // Function to print current pcb information (for debugging)
 void print_pcb(void)
 {
     PRINT("\n=== PCB of PID %d ===\n", pcb[current_process].pid);
-    PRINT("State: %d, PC: %d, SP: %d\n", pcb[current_process].state, pcb[current_process].pc, pcb[current_process].sp);
+    PRINT("State: %d, PC: 0x%x, SP: 0x%x\n", pcb[current_process].state, pcb[current_process].pc, pcb[current_process].sp);
 
     for (int i = 0; i < 13; i++)
     {
-        PRINT("R%d: %d\n", i, pcb[current_process].regs[i]);
+        PRINT("R%d: 0x%x\n", i, pcb[current_process].regs[i]);
     }
-    PRINT("LR: %d, SPSR: %d\n\n", pcb[current_process].lr, pcb[current_process].spsr);
+    PRINT("LR: 0x%x, SPSR: 0x%x\n\n", pcb[current_process].lr, pcb[current_process].spsr);
 }
 
 // ============================================================================
