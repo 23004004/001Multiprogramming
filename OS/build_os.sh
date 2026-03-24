@@ -9,9 +9,6 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 mkdir -p bin # Ensure bin directory exists for output files
 
-echo
-echo "Building OS..."
-
 TARGET="${TARGET:-versatilepb}"   # default target
 echo "  Selected TARGET=${TARGET}"
 
@@ -43,16 +40,11 @@ echo "  Cleaning up previous build files..."
 rm -f bin/*.o bin/os.elf bin/os.bin
 
 # Compilar primer P1 y P2 para que ya esten en memoria
-echo ""
-echo "  Building P1..."
 TARGET=$TARGET ../P1/build_process_1.sh
-
-echo ""
-echo "  Building P2..."
 TARGET=$TARGET ../P2/build_process_2.sh
 
 echo ""
-echo "  Building OS..."
+echo "Building OS..."
 
 echo "  Assembling root.s..."
 $AS -o bin/root.o root.s

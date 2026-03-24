@@ -5,7 +5,7 @@ BUILD_P2_SH := ./P2/build_process_2.sh
 
 qemu:
 	@echo "\n Building project for QEMU..."
-	@echo "\n=== OS ==="
+	@echo "\n=== OS (includes P1 and P2) ==="
 	TARGET=versatilepb $(BUILD_SH)
 
 bbb:
