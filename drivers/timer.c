@@ -26,7 +26,24 @@ void watchdog_disable(void)
 // Function to initialize the timer to generate an interrupt every second
 void timer_init(void)
 {
-#ifdef PLATFORM_BEAGLEBONE
+
+#ifdef PLATFORM_VERSATILEPB
+
+    // Setting the load value for 1 second
+    // f: 24 MHz, T: 1 s, f: 1/1 Hz, N = (24MHz)*1 = 24x10^6
+    // max. counter: 0xFFFFFFFF, counter = 0xFFFFFFFF - 24x10^6 = 0xFE91C9FF
+    REG(TIMER0_LOAD) = 0xF4240;
+
+    // Enable timer, periodic mode, IRQ, 32-bit counter
+    REG(TIMER0_CONTROL) = 0xE2;
+
+    // IRQ interrupt
+    REG(VIC_INTSELECT) &= ~(1<<4);
+
+    // Enable interrupt
+    REG(VIC_INTENABLE) |= (1<<4);    
+
+#elif defined(PLATFORM_BEAGLEBONE)
     // Enabling the timer clock
     REG(CM_PER_TIMER2_CLKCTRL) = 0x2;
 
@@ -69,7 +86,15 @@ void timer_init(void)
 // Function to handle timer interrupts
 void timer_irq_handler(void)
 {
-#ifdef PLATFORM_BEAGLEBONE
+#ifdef PLATFORM_VERSATILEPB
+
+    // Clearing the timer interrupt
+    REG(TIMER0_INTCLR) = 0x1;
+
+    // Acknowledging the interrupt to the controller
+    REG(VIC_VECTADDR) = 0x0;
+
+#elif defined(PLATFORM_BEAGLEBONE)
     // Clearing the timer interrupt flag
     REG(DTIMER2_TISR) = 0x2;
 

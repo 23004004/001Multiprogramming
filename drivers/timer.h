@@ -12,6 +12,18 @@
 
 #ifdef PLATFORM_VERSATILEPB // ARM926EJ-S
 
+    // VersatilePB TIMER0 base address
+    #define TIMER0_BASE 0x101E2000
+    #define TIMER0_LOAD (TIMER0_BASE + 0x00) // Load Register
+    #define TIMER0_CONTROL (TIMER0_BASE + 0x08) // Control Register
+    #define TIMER0_INTCLR (TIMER0_BASE + 0x0C) // Interrupt Clear Register
+
+    // VersatilePB Vector Interrupt Controller (VIC) base address
+    #define VIC_BASE 0x10140000
+    #define VIC_INTENABLE (VIC_BASE + 0x10) // Interrupt Enable Register
+    #define VIC_INTSELECT (VIC_BASE + 0x0C) // Interrupt Select Register
+    #define VIC_VECTADDR (VIC_BASE + 0x30)  // Vector Address Register
+
 #elif defined(PLATFORM_BEAGLEBONE) // ARM Cortex-A8 (AM335x)
 
     // BeagleBone Black watchdog timer base address

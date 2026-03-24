@@ -19,11 +19,12 @@ vector_table:
     b fiq_handler        @ 0x1C: FIQ (Fast Interrupt Request)
 
 reset_handler:
+    // Set stack pointer for IRQs
+    msr CPSR, #0xD2 @ IRQ mode (0b10010) + IRQ/FIQ disabled
+    ldr sp, =_stack_top
+
     // Set CPU to System mode
-    mrs r0, CPSR
-    mov r1, #0x1F   @ System mode (0b11111)
-    orr r0, r0, r1
-    msr CPSR, r0    @ Write to CPSR to switch mode
+    msr CPSR, #0xDF @ IRQ mode (0b11111) + IRQ/FIQ disabled
 
     // Set the initial stack pointer for the OS
     ldr sp, =_stack_top
