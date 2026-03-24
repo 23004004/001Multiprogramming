@@ -24,12 +24,12 @@ OBJCOPY="arm-none-eabi-objcopy"
 case "$TARGET" in
   versatilepb)
     CFLAGS="-DPLATFORM_VERSATILEPB"
-    LDFLAGS="-T linker.ld --defsym=MEM_ADDR=0x00010000"
+    LDFLAGS="-T ../user/P1/linker.ld --defsym=MEM_ADDR=0x00010000"
     RUN_CMD="qemu-system-arm -M versatilepb -nographic -kernel bin/main.elf"
     ;;
   beaglebone)
     CFLAGS="-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard -DPLATFORM_BEAGLEBONE"
-    LDFLAGS="-T linker.ld --defsym=MEM_ADDR=0x82100000"
+    LDFLAGS="-T ../user/P1/linker.ld --defsym=MEM_ADDR=0x82100000"
     RUN_CMD=""  # none, since we will run on real hardware
     ;;
   *)
@@ -40,10 +40,10 @@ esac
 
 # Remove previous compiled objects and binaries
 echo "  Cleaning up previous build files..."
-rm -f bin/*.o bin/main.elf bin/main.bin
+rm -f bin/*.o bin/process_1.elf bin/process_1.bin
 
 echo "  Assembling root.s..."
-$AS -o bin/root.o root.s
+$AS -o bin/root.o ../user/P1/root.s
 
 echo "  Compiling uart driver..."
 $CC -c $CFLAGS -o bin/uart.o ./../drivers/uart.c
@@ -55,13 +55,13 @@ echo "  Compiling stdlib..."
 $CC -c $CFLAGS -o bin/stdlib.o ./../lib/stdlib.c
 
 echo "  Compiling main.c..."
-$CC -c $CFLAGS -o bin/main.o main.c
+$CC -c $CFLAGS -o bin/process_1.o ../user/P1/process_1.c
 
 echo "  Linking object files..."
-$LD $LDFLAGS -o bin/main.elf bin/root.o bin/uart.o bin/stdio.o bin/stdlib.o bin/main.o
+$LD $LDFLAGS -o bin/process_1.elf bin/root.o bin/uart.o bin/stdio.o bin/stdlib.o bin/process_1.o
 
 echo "  Converting ELF to binary..."
-$OBJCOPY -O binary bin/main.elf bin/main.bin
+$OBJCOPY -O binary bin/process_1.elf bin/process_1.bin
 
 if [ "$TARGET" = "versatilepb" ]; then
   echo "  Build complete for VerstatilePB. Run with: $RUN_CMD"

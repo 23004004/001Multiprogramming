@@ -1,7 +1,7 @@
 TARGET ?= versatilepb
-BUILD_SH := ./OS/build_os.sh
-BUILD_P1_SH := ./P1/build_process_1.sh
-BUILD_P2_SH := ./P2/build_process_2.sh
+BUILD_SH := ./build/build_os.sh
+BUILD_P1_SH := ./build/build_process_1.sh
+BUILD_P2_SH := ./build/build_process_2.sh
 
 qemu:
 	@echo "\n Building project for QEMU..."

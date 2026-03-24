@@ -21,12 +21,12 @@ OBJCOPY="arm-none-eabi-objcopy"
 case "$TARGET" in
   versatilepb)
     CFLAGS="-DPLATFORM_VERSATILEPB"
-    LDFLAGS="-T linker.ld --defsym=MEM_ADDR=0x00000000 --defsym=P1_ADDR=0x00100000 --defsym=P2_ADDR=0x00200000"
+    LDFLAGS="-T ../OS/linker.ld --defsym=MEM_ADDR=0x00000000 --defsym=P1_ADDR=0x00100000 --defsym=P2_ADDR=0x00200000"
     RUN_CMD="qemu-system-arm -M versatilepb -nographic -kernel bin/os.elf"
     ;;
   beaglebone)
     CFLAGS="-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard -DPLATFORM_BEAGLEBONE"
-    LDFLAGS="-T linker.ld --defsym=MEM_ADDR=0x82000000 --defsym=P1_ADDR=0x82100000 --defsym=P2_ADDR=0x82200000"
+    LDFLAGS="-T ../OS/linker.ld --defsym=MEM_ADDR=0x82000000 --defsym=P1_ADDR=0x82100000 --defsym=P2_ADDR=0x82200000"
     RUN_CMD=""  # none, since we will run on real hardware
     ;;
   *)
@@ -40,20 +40,20 @@ echo "  Cleaning up previous build files..."
 rm -f bin/*.o bin/os.elf bin/os.bin
 
 # Compilar primer P1 y P2 para que ya esten en memoria
-TARGET=$TARGET ../P1/build_process_1.sh
-TARGET=$TARGET ../P2/build_process_2.sh
+TARGET=$TARGET ./build_process_1.sh
+TARGET=$TARGET ./build_process_2.sh
 
 echo ""
 echo "Building OS..."
 
 echo "  Assembling root.s..."
-$AS -o bin/root.o root.s
+$AS -o bin/root.o ../OS/root.s
 
 echo "  Assembling processes.s (embedding P1 and P2 binaries)..."
-$AS -o bin/processes.o processes.s
+$AS -o bin/processes.o ../OS/processes.s
 
 echo "  Compiling kernel..."
-$CC -c $CFLAGS -o bin/kernel.o kernel.c
+$CC -c $CFLAGS -o bin/kernel.o ../OS/kernel.c
 
 echo "  Compiling uart driver..."
 $CC -c $CFLAGS -o bin/uart.o ../drivers/uart.c
