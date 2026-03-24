@@ -20,9 +20,9 @@ OBJCOPY="arm-none-eabi-objcopy"
 
 case "$TARGET" in
   versatilepb)
-    CFLAGS="-DPLATFORM_VERSATILEPB"
+    CFLAGS="-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard -Wall -nostdlib -nostartfiles -ffreestanding -DPLATFORM_VERSATILEPB"
     LDFLAGS="-T ../OS/linker.ld --defsym=MEM_ADDR=0x00000000 --defsym=P1_ADDR=0x00100000 --defsym=P2_ADDR=0x00200000"
-    RUN_CMD="qemu-system-arm -M versatilepb -nographic -kernel bin/os.elf"
+    RUN_CMD="qemu-system-arm -M versatilepb -cpu cortex-a8 -nographic -kernel bin/os.elf"
     ;;
   beaglebone)
     CFLAGS="-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard -DPLATFORM_BEAGLEBONE"
@@ -81,7 +81,8 @@ echo "  Cleaning up compilation files..."
 rm -f bin/*.o
 
 if [ "$TARGET" = "versatilepb" ]; then
-  echo "  Build complete for VerstatilePB. Run with: $RUN_CMD"
+  echo "  Build complete for VerstatilePB."
+  $RUN_CMD
 else
   echo "  Build complete for BeagleBone."
 fi
