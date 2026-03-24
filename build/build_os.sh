@@ -69,7 +69,17 @@ echo "  Compiling debugger..."
 $CC -c $CFLAGS -o bin/logs.o ../debugger/logs.c
 
 echo "  Linking object files..."
-$LD $LDFLAGS -o bin/os.elf bin/root.o bin/processes.o bin/kernel.o bin/scheduler.o bin/intc.o bin/timer.o bin/uart.o bin/stdio.o bin/stdlib.o bin/logs.o
+$LD $LDFLAGS -o bin/os.elf \
+    bin/root.o \
+    bin/processes.o \
+    bin/kernel.o \
+    bin/scheduler.o \
+    bin/intc.o \
+    bin/timer.o \
+    bin/uart.o \
+    bin/stdio.o \
+    bin/stdlib.o \
+    bin/logs.o
 
 echo "  Converting ELF to binary..."
 $OBJCOPY -O binary bin/os.elf bin/os.bin
