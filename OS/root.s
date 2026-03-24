@@ -76,7 +76,6 @@ data_handler:
 irq_handler:
     bl timer_irq_handler
     bl context_switch
-    b hang
 
 fiq_handler:
     bl print_registers
