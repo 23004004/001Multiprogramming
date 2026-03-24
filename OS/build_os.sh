@@ -24,12 +24,12 @@ OBJCOPY="arm-none-eabi-objcopy"
 case "$TARGET" in
   versatilepb)
     CFLAGS="-DPLATFORM_VERSATILEPB"
-    LDFLAGS="-T linker.ld --defsym=MEM_ADDR=0x00000000"
+    LDFLAGS="-T linker.ld --defsym=MEM_ADDR=0x00000000 --defsym=P1_ADDR=0x00100000 --defsym=P2_ADDR=0x00200000"
     RUN_CMD="qemu-system-arm -M versatilepb -nographic -kernel bin/os.elf"
     ;;
   beaglebone)
     CFLAGS="-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard -DPLATFORM_BEAGLEBONE"
-    LDFLAGS="-T linker.ld --defsym=MEM_ADDR=0x82000000"
+    LDFLAGS="-T linker.ld --defsym=MEM_ADDR=0x82000000 --defsym=P1_ADDR=0x82100000 --defsym=P2_ADDR=0x82200000"
     RUN_CMD=""  # none, since we will run on real hardware
     ;;
   *)
@@ -42,8 +42,23 @@ esac
 echo "  Cleaning up previous build files..."
 rm -f bin/*.o bin/os.elf bin/os.bin
 
+# Compilar primer P1 y P2 para que ya esten en memoria
+echo ""
+echo "  Building P1..."
+TARGET=$TARGET ../P1/build_process_1.sh
+
+echo ""
+echo "  Building P2..."
+TARGET=$TARGET ../P2/build_process_2.sh
+
+echo ""
+echo "  Building OS..."
+
 echo "  Assembling root.s..."
 $AS -o bin/root.o root.s
+
+echo "  Assembling processes.s (embedding P1 and P2 binaries)..."
+$AS -o bin/processes.o processes.s
 
 echo "  Compiling kernel..."
 $CC -c $CFLAGS -o bin/kernel.o kernel.c
@@ -58,7 +73,7 @@ echo "  Compiling stdlib..."
 $CC -c $CFLAGS -o bin/stdlib.o ../lib/stdlib.c
 
 echo "  Linking object files..."
-$LD $LDFLAGS -o bin/os.elf bin/root.o bin/kernel.o bin/uart.o bin/stdio.o bin/stdlib.o
+$LD $LDFLAGS -o bin/os.elf bin/root.o bin/kernel.o bin/uart.o bin/stdio.o bin/stdlib.o bin/processes.o
 
 echo "  Converting ELF to binary..."
 $OBJCOPY -O binary bin/os.elf bin/os.bin

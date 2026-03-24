@@ -32,4 +32,14 @@ SECTIONS
 
     _stack_bottom = __bss_end__;
     _stack_top = ORIGIN(ram) + LENGTH(ram);
+
+    .p1_image P1_ADDR :
+    {
+        *(.p1_image)
+    }
+
+    .p2_image P2_ADDR :
+    {
+        *(.p2_image)
+    }
 }
