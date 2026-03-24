@@ -54,23 +54,23 @@ hang:
     b hang
 
 undefined_handler:
-    bl print_registers
-    bl print_pcb
+    bl log_registers
+    bl log_pcb
     b hang
 
 swi_handler:
-    bl print_registers
-    bl print_pcb
+    bl log_registers
+    bl log_pcb
     b hang
 
 prefetch_handler:
-    bl print_registers
-    bl print_pcb
+    bl log_registers
+    bl log_pcb
     b hang
 
 data_handler:
-    bl print_registers
-    bl print_pcb
+    bl log_registers
+    bl log_pcb
     b hang
 
 irq_handler:
@@ -79,8 +79,8 @@ irq_handler:
     b hang
 
 fiq_handler:
-    bl print_registers
-    bl print_pcb
+    bl log_registers
+    bl log_pcb
     b hang
 
 .globl enable_irq

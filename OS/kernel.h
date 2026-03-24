@@ -1,16 +1,10 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
+#include "../lib/stdio.h"
+
 // Macro to access memory-mapped registers
 #define REG(x) (*(volatile unsigned int * const)(x))
-
-// Uncomment the platform you are targeting
-// #define PLATFORM_VERSATILEPB
-// TODO:
-// - Update OS dynamically based on the platform
-// - Update linkers dynamically based on the platform
-// #define PLATFORM_BEAGLEBONE
-// NOTE: Ensure to comment both of them when compiling
 
 #ifdef PLATFORM_VERSATILEPB // ARM926EJ-S
 
@@ -94,12 +88,5 @@ void save_context(unsigned int pid);
 void schedule(void);
 void restore_context(unsigned int pid);
 void context_switch(void);
-
-// ============================================================================
-// Debugging Functions
-// ============================================================================
-
-void print_pcb(void);
-void print_registers(void);
 
 #endif

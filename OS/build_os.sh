@@ -64,14 +64,20 @@ $CC -c $CFLAGS -o bin/stdio.o ../lib/stdio.c
 echo "  Compiling stdlib..."
 $CC -c $CFLAGS -o bin/stdlib.o ../lib/stdlib.c
 
+echo "  Compiling debugger..."
+$CC -c $CFLAGS -o bin/logs.o ../debugger/logs.c
+
 echo "  Linking object files..."
-$LD $LDFLAGS -o bin/os.elf bin/root.o bin/kernel.o bin/uart.o bin/stdio.o bin/stdlib.o bin/processes.o
+$LD $LDFLAGS -o bin/os.elf bin/root.o bin/processes.o bin/kernel.o bin/uart.o bin/stdio.o bin/stdlib.o bin/logs.o
 
 echo "  Converting ELF to binary..."
 $OBJCOPY -O binary bin/os.elf bin/os.bin
 
 echo "  Disassembling for debugging..."
 arm-none-eabi-objdump -d bin/os.elf > bin/disasm.txt
+
+echo "  Cleaning up compilation files..."
+rm -f bin/*.o
 
 if [ "$TARGET" = "versatilepb" ]; then
   echo "  Build complete for VerstatilePB. Run with: $RUN_CMD"

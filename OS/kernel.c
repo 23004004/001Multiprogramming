@@ -1,5 +1,4 @@
 #include "kernel.h"
-#include "../lib/stdio.h"
 
 // ============================================================================
 // Watchdog Timer Functions
@@ -197,50 +196,6 @@ void context_switch(void)
     save_context(current_process);
     schedule();
     restore_context(current_process);
-}
-
-// ============================================================================
-// Debugging Functions
-// ============================================================================
-
-// Function to print current pcb information (for debugging)
-void print_pcb(void)
-{
-    PRINT("\n=== PCB of PID %d ===\n", pcb[current_process].pid);
-    PRINT("State: %d, PC: 0x%x, SP: 0x%x\n", pcb[current_process].state, pcb[current_process].pc, pcb[current_process].sp);
-
-    for (int i = 0; i < 13; i++)
-    {
-        PRINT("R%d: 0x%x\n", i, pcb[current_process].regs[i]);
-    }
-    PRINT("LR: 0x%x, SPSR: 0x%x\n\n", pcb[current_process].lr, pcb[current_process].spsr);
-}
-
-void print_registers(void)
-{
-    unsigned int regs[18];
-    asm volatile(
-        "stmia %0, {r0-r12} \n"
-        "str sp, [%0, #52] \n" // Save SP (R13)
-        "str lr, [%0, #56] \n" // Save LR (R14)
-        "str pc, [%0, #60] \n" // Save PC (R15)
-        "mrs r1, SPSR \n"
-        "str r1, [%0, #64] \n" // Save SPSR
-        "mrs r1, CPSR \n"
-        "str r1, [%0, #68] \n" // Save CPSR
-        :
-        : "r"(regs)
-        : "memory");
-
-    PRINT("\n=== Current Registers ===\n");
-
-    for (int i = 0; i < 13; i++)
-    {
-        PRINT("R%d: 0x%x\n", i, regs[i]);
-    }
-
-    PRINT("SP: 0x%x, LR: 0x%x, PC: 0x%x\n", regs[13], regs[14], regs[15]);
-    PRINT("SPSR: 0x%x, CPSR: 0x%x\n\n", regs[16], regs[17]);
 }
 
 // ============================================================================
