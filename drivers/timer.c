@@ -24,15 +24,12 @@ void watchdog_disable(void)
 // ============================================================================
 
 // Function to initialize the timer to generate an interrupt every second
-void timer_init(void)
+void timer_init(unsigned int time_sec)
 {
-
 #ifdef PLATFORM_VERSATILEPB
-
-    // Setting the load value for 1 second
-    // f: 24 MHz, T: 1 s, f: 1/1 Hz, N = (24MHz)*1 = 24x10^6
-    // max. counter: 0xFFFFFFFF, counter = 0xFFFFFFFF - 24x10^6 = 0xFE91C9FF
-    REG(TIMER0_LOAD) = 0xF4240;
+    // Setting the load value to ? second(s)
+    // clk: 1 MHz, t: ?, f: 1/t Hz, N = (1MHz)*t
+    REG(TIMER0_LOAD) = (unsigned int)TIMER_CLK_SPD * time_sec;
 
     // Enable timer, periodic mode, IRQ, 32-bit counter
     REG(TIMER0_CONTROL) = 0xE2;
@@ -67,10 +64,10 @@ void timer_init(void)
     // Clearing pending interrupts
     REG(DTIMER2_TISR) = 0x7;
 
-    // Setting the load value for 1 second
-    // f: 24 MHz, T: 1 s, f: 1/1 Hz, N = (24MHz)*1 = 24x10^6
-    // max. counter: 0xFFFFFFFF, counter = 0xFFFFFFFF - 24x10^6 = 0xFE91C9FF
-    REG(DTIMER2_TLDR) = 0xFE91C9FF;
+    // Setting the load value to ? second(s)
+    // clk: 24 MHz, t: ? s, f: 1/t Hz, N = (24MHz)*time_sec
+    // max_counter: 0xFFFFFFFF, timer_counter = max_counter - N
+    REG(DTIMER2_TLDR) = (unsigned int)MAX_COUNTER - ((unsigned int)TIMER_CLK_SPD * time_sec);
 
     // Setting the counter to the same value
     REG(DTIMER2_TCRR) = 0xFE91C9FF;
@@ -87,13 +84,11 @@ void timer_init(void)
 void timer_irq_handler(void)
 {
 #ifdef PLATFORM_VERSATILEPB
-
     // Clearing the timer interrupt
     REG(TIMER0_INTCLR) = 0x1;
 
     // Acknowledging the interrupt to the controller
     REG(VIC_VECTADDR) = 0x0;
-
 #elif defined(PLATFORM_BEAGLEBONE)
     // Clearing the timer interrupt flag
     REG(DTIMER2_TISR) = 0x2;

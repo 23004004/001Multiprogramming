@@ -10,6 +10,8 @@
 // Kernel Functions
 // ============================================================================
 
+#define IRQ_TIME 1 // How often the IRQ fires (seconds)
+
 extern unsigned int process_count;
 
 void create_process(unsigned int pid);

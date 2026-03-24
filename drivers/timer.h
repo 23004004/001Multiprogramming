@@ -12,6 +12,8 @@
 
 #ifdef PLATFORM_VERSATILEPB // ARM926EJ-S
 
+    #define TIMER_CLK_SPD 1000000 // 1 MHz
+
     // VersatilePB TIMER0 base address
     #define TIMER0_BASE 0x101E2000
     #define TIMER0_LOAD (TIMER0_BASE + 0x00) // Load Register
@@ -25,6 +27,9 @@
     #define VIC_VECTADDR (VIC_BASE + 0x30)  // Vector Address Register
 
 #elif defined(PLATFORM_BEAGLEBONE) // ARM Cortex-A8 (AM335x)
+
+    #define TIMER_CLK_SPD 24000000 // 24 MHz
+    #define MAX_COUNTER 0xFFFFFFFF
 
     // BeagleBone Black watchdog timer base address
     #define WDT1_BASE 0x44E35000
@@ -61,7 +66,7 @@ void watchdog_disable(void);
 // Timer Functions
 // ============================================================================
 
-void timer_init(void);
+void timer_init(unsigned int time_sec);
 void timer_irq_handler(void);
 
 #endif

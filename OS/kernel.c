@@ -55,7 +55,7 @@ void kernel_init(void)
     PRINT("OK\n");
 
     PRINT("Initializing timer ... ");
-    timer_init();
+    timer_init(IRQ_TIME);
     PRINT("OK\n");
 
     PRINT("Enabling interrupts ... ");
