@@ -83,22 +83,6 @@ fiq_handler:
     bl log_pcb
     b hang
 
-.globl enable_irq
-enable_irq:
-    mrs r0, CPSR
-    mov r1, #0xFFFFFF7F
-    and r0, r0, r1
-    msr CPSR, r0    @ Enable IRQs by clearing the I bit in CPSR
-    bx lr
-
-.globl disable_irq
-disable_irq:
-    mrs r0, CPSR
-    mov r1, #0x80
-    orr r0, r0, r1
-    msr CPSR, r0    @ Disable IRQs by setting the I bit in CPSR
-    bx lr
-
 // Reserve a contiguous region for the process stack
 .section .bss
 .align 4            @ Align to 16 bits (2^4)

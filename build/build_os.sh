@@ -52,23 +52,24 @@ $AS -o bin/root.o ../OS/root.s
 echo "  Assembling processes.s (embedding P1 and P2 binaries)..."
 $AS -o bin/processes.o ../OS/processes.s
 
-echo "  Compiling kernel..."
+echo "  Compiling OS..."
 $CC -c $CFLAGS -o bin/kernel.o ../OS/kernel.c
+$CC -c $CFLAGS -o bin/scheduler.o ../OS/scheduler.c
 
-echo "  Compiling uart driver..."
+echo "  Compiling drivers..."
+$CC -c $CFLAGS -o bin/intc.o ../drivers/intc.c
+$CC -c $CFLAGS -o bin/timer.o ../drivers/timer.c
 $CC -c $CFLAGS -o bin/uart.o ../drivers/uart.c
 
-echo "  Compiling library..."
+echo "  Compiling libraries..."
 $CC -c $CFLAGS -o bin/stdio.o ../lib/stdio.c
-
-echo "  Compiling stdlib..."
 $CC -c $CFLAGS -o bin/stdlib.o ../lib/stdlib.c
 
 echo "  Compiling debugger..."
 $CC -c $CFLAGS -o bin/logs.o ../debugger/logs.c
 
 echo "  Linking object files..."
-$LD $LDFLAGS -o bin/os.elf bin/root.o bin/processes.o bin/kernel.o bin/uart.o bin/stdio.o bin/stdlib.o bin/logs.o
+$LD $LDFLAGS -o bin/os.elf bin/root.o bin/processes.o bin/kernel.o bin/scheduler.o bin/intc.o bin/timer.o bin/uart.o bin/stdio.o bin/stdlib.o bin/logs.o
 
 echo "  Converting ELF to binary..."
 $OBJCOPY -O binary bin/os.elf bin/os.bin
