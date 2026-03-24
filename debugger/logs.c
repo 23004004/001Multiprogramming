@@ -40,25 +40,25 @@ void log_registers(void)
         "mrs r1, CPSR \n"
         "str r1, [%0, #68] \n" // Save CPSR
         :
-        : "r"(regs)
+        : "r"(temp_regs)
         : "memory");
 
     PRINT("\n=== Current Registers ===\n");
 
-    PRINT("R%d: 0x%x\n", 0, regs[0]);
-    PRINT("R%d: 0x%x\n", 1, regs[1]);
-    PRINT("R%d: 0x%x\n", 2, regs[2]);
-    PRINT("R%d: 0x%x\n", 3, regs[3]);
-    PRINT("R%d: 0x%x\n", 4, regs[4]);
-    PRINT("R%d: 0x%x\n", 5, regs[5]);
-    PRINT("R%d: 0x%x\n", 6, regs[6]);
-    PRINT("R%d: 0x%x\n", 7, regs[7]);
-    PRINT("R%d: 0x%x\n", 8, regs[8]);
-    PRINT("R%d: 0x%x\n", 9, regs[9]);
-    PRINT("R%d: 0x%x\n", 10, regs[10]);
-    PRINT("R%d: 0x%x\n", 11, regs[11]);
-    PRINT("R%d: 0x%x\n", 12, regs[12]);
+    PRINT("R%d: 0x%x\n", 0, temp_regs[0]);
+    PRINT("R%d: 0x%x\n", 1, temp_regs[1]);
+    PRINT("R%d: 0x%x\n", 2, temp_regs[2]);
+    PRINT("R%d: 0x%x\n", 3, temp_regs[3]);
+    PRINT("R%d: 0x%x\n", 4, temp_regs[4]);
+    PRINT("R%d: 0x%x\n", 5, temp_regs[5]);
+    PRINT("R%d: 0x%x\n", 6, temp_regs[6]);
+    PRINT("R%d: 0x%x\n", 7, temp_regs[7]);
+    PRINT("R%d: 0x%x\n", 8, temp_regs[8]);
+    PRINT("R%d: 0x%x\n", 9, temp_regs[9]);
+    PRINT("R%d: 0x%x\n", 10, temp_regs[10]);
+    PRINT("R%d: 0x%x\n", 11, temp_regs[11]);
+    PRINT("R%d: 0x%x\n", 12, temp_regs[12]);
 
-    PRINT("SP: 0x%x, LR: 0x%x, PC: 0x%x\n", regs[13], regs[14], regs[15]);
-    PRINT("SPSR: 0x%x, CPSR: 0x%x\n\n", regs[16], regs[17]);
+    PRINT("SP: 0x%x, LR: 0x%x, PC: 0x%x\n", temp_regs[13], temp_regs[14], temp_regs[15]);
+    PRINT("SPSR: 0x%x, CPSR: 0x%x\n\n", temp_regs[16], temp_regs[17]);
 }

@@ -9,9 +9,9 @@
 // ============================================================================
 
 #define NUM_REGISTERS 18
-unsigned int regs[NUM_REGISTERS];
+unsigned int temp_regs[NUM_REGISTERS];
 
-void print_pcb(void);
-void print_registers(void);
+void log_pcb(void);
+void log_registers(void);
 
 #endif
