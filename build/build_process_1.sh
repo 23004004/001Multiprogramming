@@ -24,7 +24,7 @@ OBJCOPY="arm-none-eabi-objcopy"
 case "$TARGET" in
   versatilepb)
     CFLAGS="-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard -Wall -nostdlib -nostartfiles -ffreestanding -DPLATFORM_VERSATILEPB"
-    LDFLAGS="-T ../user/P1/linker.ld --defsym=MEM_ADDR=0x00010000"
+    LDFLAGS="-T ../user/P1/linker.ld --defsym=MEM_ADDR=0x00100000"
     RUN_CMD="qemu-system-arm -M versatilepb -cpu cortex-a8 -nographic -kernel build/bin/process_1.elf"
     ;;
   beaglebone)
