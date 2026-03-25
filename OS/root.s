@@ -104,7 +104,6 @@ irq_handler:
     mov r1, #3  @ PROCESS_WAITING
     bl update_process_state
 
-    bl log_pcb
     bl schedule
     bl timer_irq_handler
 
