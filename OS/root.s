@@ -76,6 +76,8 @@ data_handler:
 
 irq_handler:
     // Save context
+    stmfd sp!, {r0-r12}
+
     ldr r0, =pcb
     ldr r1, =current_process
     ldr r2, [r1]
@@ -90,7 +92,15 @@ irq_handler:
     mov r8, sp
     msr CPSR, r6        @ Switch back to IRQ mode
 
-    stm r5, {r0-r12}    @ Save R0-R12
+    // Save R0-R12
+    ldmfd sp!, {r0-r4}
+    stmia r5!, {r0-r4}
+    ldmfd sp!, {r0-r4}
+    stmia r5!, {r0-r4}
+    ldmfd sp!, {r0-r2}
+    stmia r5!, {r0-r2}
+    sub r5, r5, #52
+
     str r8, [r5, #52]   @ Save SP (R13)
     str lr, [r5, #56]   @ Save LR (R14)
     subs r6, lr, #4     @ Save PC (R15)
@@ -100,7 +110,8 @@ irq_handler:
     dsb                 @ Data Synchronization Barrier
 
     // Update process state
-    mov r0, r2
+    ldr r1, =current_process
+    ldr r0, [r1]
     mov r1, #3  @ PROCESS_WAITING
     bl update_process_state
 
