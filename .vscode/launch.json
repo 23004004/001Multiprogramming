@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug on QEMU",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "external",
+            "gdbTarget": "localhost:3333",
+            "executable": "${workspaceFolder}/build/bin/os.elf",
+            "gdbPath": "gdb-multiarch",
+            "runToEntryPoint": "kernel_init",
+            "showDevDebugOutput": "raw"
+        }
+    ]
+}
