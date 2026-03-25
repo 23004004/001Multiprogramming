@@ -13,4 +13,8 @@ bbb:
 	@echo "\n=== OS (includes P1 and P2) ==="
 	TARGET=beaglebone $(BUILD_SH)
 
-.PHONY: qemu bbb
+qemu-debug:
+	@echo "\n Building project for QEMU (DEBUG)..."
+	TARGET=versatilepb DEBUG=1 $(BUILD_SH)
+
+.PHONY: qemu bbb qemu-debug
