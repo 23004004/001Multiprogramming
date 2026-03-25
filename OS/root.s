@@ -75,8 +75,50 @@ data_handler:
     b hang
 
 irq_handler:
+    // Save context
+    ldr r0, =pcb
+    ldr r1, =current_process
+    ldr r2, [r1]
+    mov r3, #76     @ sizeof(PCB) = 18 * 4 + 4
+    mul r4, r3, r2  @ sizeof(PCB) * current_process
+    add r5, r0, r4  @ &pcb[current_process]
+
+    str lr, [r5, #56]   @ Save LR (R14)
+    subs r6, lr, #4     @ Save PC (R15)
+    str r6, [r5, #60]   @ PC = LR_irq - 4
+    mrs r7, SPSR        @ Save SPSR
+    str r7, [r5, #64]
+    dsb
+
+    // Update process state
+    mov r0, r2
+    mov r1, #3  @ PROCESS_WAITING
+    bl update_process_state
+
+    bl schedule
     bl timer_irq_handler
-    bl context_switch
+
+    // Update process state
+    ldr r1, =current_process
+    ldr r0, [r1]
+    mov r1, #2  @ PROCESS_RUNNING
+    bl update_process_state
+
+    // Restore context
+    ldr r0, =pcb
+    ldr r1, =current_process
+    ldr r2, [r1]
+    mov r3, #76     @ sizeof(PCB) = 18 * 4 + 4
+    mul r4, r3, r2  @ sizeof(PCB) * current_process
+    add r5, r0, r4  @ &pcb[current_process]
+
+    ldr r6, [r5, #64]   @ Restore SPSR
+    msr SPSR, r6
+    ldr r7, [r5, #60]   @ Restore LR (R14)
+    adds lr, r7, #4     @ LR_irq = saved_PC + 4
+    ldm r5, {r0-r12}    @ Restore R0-R12
+    subs pc, lr, #4     @ Running the other process
+
     b hang
 
 fiq_handler:
