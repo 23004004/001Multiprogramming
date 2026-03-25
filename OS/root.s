@@ -83,18 +83,28 @@ irq_handler:
     mul r4, r3, r2  @ sizeof(PCB) * current_process
     add r5, r0, r4  @ &pcb[current_process]
 
+    // Switch to system mode to save SP
+    mrs r6, CPSR
+    orr r7, r6, #0x1F
+    msr CPSR, r7        @ Switch to system mode
+    mov r8, sp
+    msr CPSR, r6        @ Switch back to IRQ mode
+
+    stm r5, {r0-r12}    @ Save R0-R12
+    str r8, [r5, #52]   @ Save SP (R13)
     str lr, [r5, #56]   @ Save LR (R14)
     subs r6, lr, #4     @ Save PC (R15)
     str r6, [r5, #60]   @ PC = LR_irq - 4
     mrs r7, SPSR        @ Save SPSR
     str r7, [r5, #64]
-    dsb
+    dsb                 @ Data Synchronization Barrier
 
     // Update process state
     mov r0, r2
     mov r1, #3  @ PROCESS_WAITING
     bl update_process_state
 
+    bl log_pcb
     bl schedule
     bl timer_irq_handler
 
@@ -116,6 +126,14 @@ irq_handler:
     msr SPSR, r6
     ldr r7, [r5, #60]   @ Restore LR (R14)
     adds lr, r7, #4     @ LR_irq = saved_PC + 4
+
+    // Switch to system mode to restore SP
+    mrs r6, CPSR
+    orr r7, r6, #0x1F
+    msr CPSR, r7        @ Switch to system mode
+    ldr sp, [r5, #52]   @ Restore SP (R13)
+    msr CPSR, r6        @ Switch back to IRQ mode
+
     ldm r5, {r0-r12}    @ Restore R0-R12
     subs pc, lr, #4     @ Running the other process
 
