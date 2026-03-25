@@ -20,6 +20,7 @@ OBJCOPY="arm-none-eabi-objcopy"
 
 case "$TARGET" in
   versatilepb)
+    AFLAGS="-g"
     CFLAGS="-g -O0 -mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard -Wall -nostdlib -nostartfiles -ffreestanding -DPLATFORM_VERSATILEPB"
     LDFLAGS="-T ../OS/linker.ld --defsym=MEM_ADDR=0x00000000 --defsym=P1_ADDR=0x00100000 --defsym=P2_ADDR=0x00200000"
     if [ "$DEBUG" = "1" ]; then
@@ -29,6 +30,7 @@ case "$TARGET" in
     fi
     ;;
   beaglebone)
+    AFLAGS=""
     CFLAGS="-mcpu=cortex-a8 -mfpu=neon -mfloat-abi=hard -DPLATFORM_BEAGLEBONE"
     LDFLAGS="-T ../OS/linker.ld --defsym=MEM_ADDR=0x82000000 --defsym=P1_ADDR=0x82100000 --defsym=P2_ADDR=0x82200000"
     RUN_CMD=""  # none, since we will run on real hardware
@@ -51,10 +53,10 @@ echo ""
 echo "Building OS..."
 
 echo "  Assembling root.s..."
-$AS -o bin/root.o ../OS/root.s
+$AS $AFLAGS -o bin/root.o ../OS/root.s
 
 echo "  Assembling processes.s (embedding P1 and P2 binaries)..."
-$AS -o bin/processes.o ../OS/processes.s
+$AS $AFLAGS -o bin/processes.o ../OS/processes.s
 
 echo "  Compiling OS..."
 $CC -c $CFLAGS -o bin/kernel.o ../OS/kernel.c
