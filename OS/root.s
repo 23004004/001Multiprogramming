@@ -85,11 +85,17 @@ irq_handler:
     mul r4, r3, r2  @ sizeof(PCB) * current_process
     add r5, r0, r4  @ &pcb[current_process]
 
-    // Switch to system mode to save SP
+    // Disable interrupts before mode switch
+    mrs r6, CPSR
+    orr r7, r6, #0x80
+    msr CPSR, r7
+
+    // Switch to system mode to save system SP and LR
     mrs r6, CPSR
     orr r7, r6, #0x1F
     msr CPSR, r7        @ Switch to system mode
     mov r8, sp
+    mov r9, lr
     msr CPSR, r6        @ Switch back to IRQ mode
 
     // Save R0-R12
@@ -102,7 +108,7 @@ irq_handler:
     sub r5, r5, #52
 
     str r8, [r5, #52]   @ Save SP (R13)
-    str lr, [r5, #56]   @ Save LR (R14)
+    str r9, [r5, #56]   @ Save LR (R14)
     subs r6, lr, #4     @ Save PC (R15)
     str r6, [r5, #60]   @ PC = LR_irq - 4
     mrs r7, SPSR        @ Save SPSR
@@ -125,11 +131,17 @@ irq_handler:
     ldr r7, [r5, #60]   @ Restore LR (R14)
     adds lr, r7, #4     @ LR_irq = saved_PC + 4
 
-    // Switch to system mode to restore SP
+    // Disable interrupts before mode switch
+    mrs r6, CPSR
+    orr r7, r6, #0x80
+    msr CPSR, r7
+
+    // Switch to system mode to restore system SP and LR
     mrs r6, CPSR
     orr r7, r6, #0x1F
     msr CPSR, r7        @ Switch to system mode
     ldr sp, [r5, #52]   @ Restore SP (R13)
+    ldr lr, [r5, #56]   @ Restore LR (R14)
     msr CPSR, r6        @ Switch back to IRQ mode
 
     ldm r5, {r0-r12}    @ Restore R0-R12
