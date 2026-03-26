@@ -7,8 +7,10 @@
 // Function to log the current pcb information
 void log_pcb(void)
 {
+    const char* state_names[] = { "NEW", "READY", "RUNNING", "WAITING", "TERMINATED" };
+
     PRINT("\n=== PCB of PID %d ===\n", pcb[current_process].pid);
-    PRINT("State: %d, PC: 0x%x, SP: 0x%x\n", pcb[current_process].state, pcb[current_process].pc, pcb[current_process].sp);
+    PRINT("State: %s, PC: 0x%x, SP: 0x%x\n", state_names[pcb[current_process].state], pcb[current_process].pc, pcb[current_process].sp);
 
     PRINT("R%d: 0x%x\n", 0, pcb[current_process].regs[0]);
     PRINT("R%d: 0x%x\n", 1, pcb[current_process].regs[1]);
