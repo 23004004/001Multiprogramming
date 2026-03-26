@@ -109,20 +109,8 @@ irq_handler:
     str r7, [r5, #64]
     dsb                 @ Data Synchronization Barrier
 
-    // Update process state
-    ldr r1, =current_process
-    ldr r0, [r1]
-    mov r1, #3  @ PROCESS_WAITING
-    bl update_process_state
-
     bl schedule
     bl timer_irq_handler
-
-    // Update process state
-    ldr r1, =current_process
-    ldr r0, [r1]
-    mov r1, #2  @ PROCESS_RUNNING
-    bl update_process_state
 
     // Restore context
     ldr r0, =pcb

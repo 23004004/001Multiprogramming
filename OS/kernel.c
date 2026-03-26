@@ -12,14 +12,6 @@ void create_process(unsigned int pid)
     update_process_state(pid, PROCESS_READY);
 }
 
-// Function for context switching
-void context_switch(void)
-{
-    save_context();
-    schedule();
-    restore_context();
-}
-
 // ============================================================================
 // Main Functions
 // ============================================================================
