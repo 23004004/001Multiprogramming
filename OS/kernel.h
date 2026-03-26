@@ -10,7 +10,7 @@
 // Kernel Functions
 // ============================================================================
 
-#define IRQ_TIME 1 // How often the IRQ fires (seconds)
+#define IRQ_TIME 100 // How often the IRQ fires (ms)
 
 extern unsigned int process_count;
 

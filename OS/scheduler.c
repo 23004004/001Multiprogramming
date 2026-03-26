@@ -50,25 +50,34 @@ void update_process_state(unsigned int pid, ProcessState new_state)
 
 unsigned int current_process = 0;
 unsigned int next_process = 0;
-
+unsigned int quantum = 10;
 
 // Fuction to choose the next process to run (round-robin scheduler)
 void schedule(void)
 {
-    if (current_process == 1)
+    if (quantum == 0)
     {
-        next_process = 2;
+        PRINT("...\n");
+        if (current_process == 1)
+        {
+            next_process = 2;
+        }
+        else
+        {
+            next_process = 1;
+        }
+
+        // Only switch to the next process if it's READY or WAITING
+        if (pcb[next_process].state == PROCESS_READY || pcb[next_process].state == PROCESS_WAITING)
+        {
+            update_process_state(current_process, PROCESS_WAITING);
+            current_process = next_process;
+            update_process_state(current_process, PROCESS_RUNNING);
+            quantum = 10;
+        }
     }
     else
     {
-        next_process = 1;
-    }
-
-    // Only switch to the next process if it's READY or WAITING
-    if (pcb[next_process].state == PROCESS_READY || pcb[next_process].state == PROCESS_WAITING)
-    {
-        update_process_state(current_process, PROCESS_WAITING);
-        current_process = next_process;
-        update_process_state(current_process, PROCESS_RUNNING);
+        quantum--;
     }
 }

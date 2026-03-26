@@ -15,7 +15,7 @@ void process_2(void)
         }
 
         // Small delay to prevent overwhelming UART
-        for (volatile int i = 0; i < 85000000; i++)
+        for (volatile int i = 0; i < 95000000; i++)
             ;
     }
 }

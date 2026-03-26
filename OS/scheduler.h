@@ -1,6 +1,8 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
+#include "../lib/stdio.h"
+
 #ifdef PLATFORM_VERSATILEPB // ARM926EJ-S
 
     // VesatilePB base address
@@ -56,6 +58,7 @@ void update_process_state(unsigned int pid, ProcessState new_state);
 
 extern unsigned int current_process;
 extern unsigned int next_process;
+extern unsigned int quantum;
 
 void save_context(void);
 void restore_context(void);

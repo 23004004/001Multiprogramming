@@ -23,13 +23,13 @@ void watchdog_disable(void)
 // Timer Functions
 // ============================================================================
 
-// Function to initialize the timer to generate an interrupt every second
-void timer_init(unsigned int time_sec)
+// Function to initialize the timer to generate an interrupt every ? ms
+void timer_init(unsigned int time_ms)
 {
 #ifdef PLATFORM_VERSATILEPB
-    // Setting the load value to ? second(s)
-    // clk: 1 MHz, t: ?, f: 1/t Hz, N = (1MHz)*t
-    REG(TIMER0_LOAD) = (unsigned int)TIMER_CLK_SPD * time_sec;
+    // Setting the load value to ? millisecond(s)
+    // clk: 1 MHz, t: ?, f: 1/t Hz, N = (1MHz/1000)*t_ms
+    REG(TIMER0_LOAD) = (unsigned int)(TIMER_CLK_SPD / 1000) * time_ms;
 
     // Enable timer, periodic mode, IRQ, 32-bit counter
     REG(TIMER0_CONTROL) = 0xE2;
@@ -38,7 +38,7 @@ void timer_init(unsigned int time_sec)
     REG(VIC_INTSELECT) &= ~(1<<4);
 
     // Enable interrupt
-    REG(VIC_INTENABLE) |= (1<<4);    
+    REG(VIC_INTENABLE) |= (1<<4);   
 
 #elif defined(PLATFORM_BEAGLEBONE)
     // Enabling the timer clock
@@ -64,13 +64,13 @@ void timer_init(unsigned int time_sec)
     // Clearing pending interrupts
     REG(DTIMER2_TISR) = 0x7;
 
-    // Setting the load value to ? second(s)
-    // clk: 24 MHz, t: ? s, f: 1/t Hz, N = (24MHz)*time_sec
+    // Setting the load value to ? millisecond(s)
+    // clk: 24 MHz, t: ? ms, f: 1/t Hz, N = (24MHz/1000)*time_ms
     // max_counter: 0xFFFFFFFF, timer_counter = max_counter - N
-    REG(DTIMER2_TLDR) = (unsigned int)MAX_COUNTER - ((unsigned int)TIMER_CLK_SPD * time_sec);
+    REG(DTIMER2_TLDR) = (unsigned int)MAX_COUNTER - (((unsigned int)TIMER_CLK_SPD / 1000) * time_ms);
 
     // Setting the counter to the same value
-    REG(DTIMER2_TCRR) = 0xFE91C9FF;
+    REG(DTIMER2_TCRR) = REG(DTIMER2_TLDR);
 
     // Enabling overflow interrupt
     REG(DTIMER2_TIER) = 0x2;
@@ -89,6 +89,7 @@ void timer_irq_handler(void)
 
     // Acknowledging the interrupt to the controller
     REG(VIC_VECTADDR) = 0x0;
+
 #elif defined(PLATFORM_BEAGLEBONE)
     // Clearing the timer interrupt flag
     REG(DTIMER2_TISR) = 0x2;
@@ -96,6 +97,4 @@ void timer_irq_handler(void)
     // Acknowledging the interrupt to the controller
     REG(INTC_CONTROL) = 0x1;
 #endif
-
-    PRINT("...\n");
 }

@@ -66,7 +66,7 @@ void watchdog_disable(void);
 // Timer Functions
 // ============================================================================
 
-void timer_init(unsigned int time_sec);
+void timer_init(unsigned int time_ms);
 void timer_irq_handler(void);
 
 #endif
