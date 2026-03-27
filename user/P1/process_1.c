@@ -14,7 +14,7 @@ void process_1(void)
             n = 0;
         }
 
-        yield();
+        //yield();
 
         // Small delay to prevent overwhelming UART
         for (volatile int i = 0; i < 95000000; i++)

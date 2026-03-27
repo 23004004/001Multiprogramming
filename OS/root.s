@@ -124,8 +124,15 @@ clear_bss:
 
     // Jump to the C main function
     bl kernel_init
-    
-    // If main returns, loop forever
+
+    // Load the dedicated stack for PID 0 before entering the OS process loop
+    ldr r0, =pcb
+    ldr sp, [r0, #52]
+
+    // Start running the OS context as PID 0
+    bl os_process
+
+    // If the OS context ever returns, loop forever
 hang:
     b hang
 

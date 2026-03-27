@@ -6,14 +6,23 @@
 
 PCB pcb[NUM_PROCESSES];
 
-static unsigned int select_next_user_process(void)
+static unsigned int get_process_stack_top(unsigned int pid)
 {
-    if (current_process == 1)
+    unsigned int stack_top = MEM_ADDR + pid * 0x100000 + 0x10000;
+
+    // PID 0 runs inside the OS image, so keep its process stack below the
+    // exception stacks used by IRQ/SVC handlers at the top of the OS region.
+    if (pid == 0)
     {
-        return 2;
+        stack_top -= 0x2000;
     }
 
-    return 1;
+    return stack_top;
+}
+
+static unsigned int select_next_process(void)
+{
+    return (current_process + 1) % NUM_PROCESSES;
 }
 
 static int is_runnable_process(unsigned int pid)
@@ -26,9 +35,11 @@ static int is_runnable_process(unsigned int pid)
 // Function to Initialize PCBs
 void pcb_init(unsigned int pid)
 {
+    unsigned int stack_top = get_process_stack_top(pid);
+
     pcb[pid].pid = pid;
     pcb[pid].pc = MEM_ADDR + pid * 0x100000;           // Entry point
-    pcb[pid].sp = MEM_ADDR + pid * 0x100000 + 0x10000; // Stack top (base + 64K)
+    pcb[pid].sp = stack_top;                           // Stack top
     pcb[pid].lr = MEM_ADDR + pid * 0x100000;           // Entry point
     pcb[pid].spsr = 0x1F;                              // System mode, IRQs enabled
 
@@ -44,12 +55,14 @@ void pcb_init(unsigned int pid)
 // Function to setup the stack frame of a process
 void setup_process_stack(unsigned int pid)
 {
+    unsigned int stack_top = get_process_stack_top(pid);
+
     // Building a saved context at the top of the region:
     // Set LR to the process entry point
     pcb[pid].lr = MEM_ADDR + pid * 0x100000;
 
     // Set the process SP to the address at the lowest word of this frame
-    pcb[pid].sp = MEM_ADDR + pid * 0x100000 + 0x10000 - 14 * sizeof(unsigned int);
+    pcb[pid].sp = stack_top - 14 * sizeof(unsigned int);
 
     // Set the PC to the process entry point
     pcb[pid].pc = MEM_ADDR + pid * 0x100000;
@@ -75,7 +88,7 @@ void schedule(void)
     if (quantum == 0)
     {
         PRINT("...\n");
-        next_process = select_next_user_process();
+        next_process = select_next_process();
 
         // Only switch to the next process if it's READY or WAITING
         if (is_runnable_process(next_process))
@@ -96,7 +109,7 @@ void schedule(void)
 void schedule_yield(void)
 {
     PRINT(".\n");
-    next_process = select_next_user_process();
+    next_process = select_next_process();
 
     if (is_runnable_process(next_process))
     {

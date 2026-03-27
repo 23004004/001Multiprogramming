@@ -29,6 +29,9 @@ void os_init(void)
     create_process(process_count++); // User process 1
     create_process(process_count++); // User process 2
     PRINT("OK\n\n");
+
+    current_process = 0;
+    update_process_state(current_process, PROCESS_RUNNING);
 }
 
 // Function to initialize the kernel
@@ -58,4 +61,23 @@ void kernel_init(void)
 
     // Initialize the OS and create processes
     os_init();
+}
+
+void os_process(void)
+{
+    int n = 0;
+
+    while (1)
+    {
+        PRINT("----From OS: %d\n", n);
+
+        n++;
+        if (n == 10)
+        {
+            n = 0;
+        }
+
+        yield();
+
+    }
 }
