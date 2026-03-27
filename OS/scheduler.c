@@ -6,6 +6,23 @@
 
 PCB pcb[NUM_PROCESSES];
 
+static unsigned int select_next_user_process(void)
+{
+    if (current_process == 1)
+    {
+        return 2;
+    }
+
+    return 1;
+}
+
+static int is_runnable_process(unsigned int pid)
+{
+    return pcb[pid].state == PROCESS_READY ||
+           pcb[pid].state == PROCESS_WAITING ||
+           pcb[pid].state == PROCESS_RUNNING;
+}
+
 // Function to Initialize PCBs
 void pcb_init(unsigned int pid)
 {
@@ -13,7 +30,7 @@ void pcb_init(unsigned int pid)
     pcb[pid].pc = MEM_ADDR + pid * 0x100000;           // Entry point
     pcb[pid].sp = MEM_ADDR + pid * 0x100000 + 0x10000; // Stack top (base + 64K)
     pcb[pid].lr = MEM_ADDR + pid * 0x100000;           // Entry point
-    pcb[pid].spsr = 0x13;                              // SVC mode, IRQs enabled
+    pcb[pid].spsr = 0x1F;                              // System mode, IRQs enabled
 
     for (int i = 0; i < 13; i++)
         pcb[pid].regs[i] = 0x0;
@@ -58,17 +75,10 @@ void schedule(void)
     if (quantum == 0)
     {
         PRINT("...\n");
-        if (current_process == 1)
-        {
-            next_process = 2;
-        }
-        else
-        {
-            next_process = 1;
-        }
+        next_process = select_next_user_process();
 
         // Only switch to the next process if it's READY or WAITING
-        if (pcb[next_process].state == PROCESS_READY || pcb[next_process].state == PROCESS_WAITING)
+        if (is_runnable_process(next_process))
         {
             update_process_state(current_process, PROCESS_WAITING);
             current_process = next_process;
@@ -80,4 +90,24 @@ void schedule(void)
     {
         quantum--;
     }
+}
+
+// Function to voluntarily yield the CPU to the other user process
+void schedule_yield(void)
+{
+    PRINT(".\n");
+    next_process = select_next_user_process();
+
+    if (is_runnable_process(next_process))
+    {
+        update_process_state(current_process, PROCESS_READY);
+        current_process = next_process;
+        update_process_state(current_process, PROCESS_RUNNING);
+    }
+    else
+    {
+        update_process_state(current_process, PROCESS_RUNNING);
+    }
+
+    quantum = 10;
 }

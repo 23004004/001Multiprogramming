@@ -6,6 +6,77 @@
 _start:
 b reset_handler
 
+.macro SAVE_CONTEXT pc_offset
+    stmfd sp!, {r0-r12}
+
+    ldr r0, =pcb
+    ldr r1, =current_process
+    ldr r2, [r1]
+    mov r3, #76     @ sizeof(PCB) = 19 * 4
+    mul r4, r3, r2
+    add r5, r0, r4
+
+    // Disable IRQs before switching modes
+    mrs r6, CPSR
+    orr r7, r6, #0x80
+    msr CPSR, r7
+
+    // Read the interrupted process SP/LR from System mode
+    mrs r6, CPSR
+    orr r7, r6, #0x1F
+    msr CPSR, r7
+    mov r8, sp
+    mov r9, lr
+    msr CPSR, r6
+
+    // Copy R0-R12 from the exception stack into the PCB
+    ldmfd sp!, {r0-r4}
+    stmia r5!, {r0-r4}
+    ldmfd sp!, {r0-r4}
+    stmia r5!, {r0-r4}
+    ldmfd sp!, {r0-r2}
+    stmia r5!, {r0-r2}
+    sub r5, r5, #52
+
+    str r8, [r5, #52]
+    str r9, [r5, #56]
+    sub r6, lr, #\pc_offset
+    str r6, [r5, #60]
+    mrs r7, SPSR
+    str r7, [r5, #64]
+    dsb
+.endm
+
+.macro RESTORE_CONTEXT return_offset
+    ldr r0, =pcb
+    ldr r1, =current_process
+    ldr r2, [r1]
+    mov r3, #76     @ sizeof(PCB) = 19 * 4
+    mul r4, r3, r2
+    add r5, r0, r4
+
+    ldr r6, [r5, #64]
+    msr SPSR, r6
+    ldr r7, [r5, #60]
+    add lr, r7, #\return_offset
+
+    // Disable IRQs before switching modes
+    mrs r6, CPSR
+    orr r7, r6, #0x80
+    msr CPSR, r7
+
+    // Restore the process SP/LR in System mode
+    mrs r6, CPSR
+    orr r7, r6, #0x1F
+    msr CPSR, r7
+    ldr sp, [r5, #52]
+    ldr lr, [r5, #56]
+    msr CPSR, r6
+
+    ldm r5, {r0-r12}
+    subs pc, lr, #\return_offset
+.endm
+
 // ARM Vector Table
 .align 5                 @ Align to 32 bits (2^5)
 vector_table:
@@ -21,6 +92,10 @@ vector_table:
 reset_handler:
     // Set stack pointer for IRQs
     msr CPSR, #0xD2 @ IRQ mode (0b10010) + IRQ/FIQ disabled
+    ldr sp, =_stack_top
+
+    // Set stack pointer for SWI/SVC mode
+    msr CPSR, #0xD3 @ SVC mode (0b10011) + IRQ/FIQ disabled
     ldr sp, =_stack_top
 
     // Set CPU to System mode
@@ -60,9 +135,9 @@ undefined_handler:
     b hang
 
 swi_handler:
-    bl log_registers
-    bl log_pcb
-    b hang
+    SAVE_CONTEXT 0
+    bl schedule_yield
+    RESTORE_CONTEXT 0
 
 prefetch_handler:
     bl log_registers
@@ -75,79 +150,10 @@ data_handler:
     b hang
 
 irq_handler:
-    // Save context
-    stmfd sp!, {r0-r12}
-
-    ldr r0, =pcb
-    ldr r1, =current_process
-    ldr r2, [r1]
-    mov r3, #76     @ sizeof(PCB) = 18 * 4 + 4
-    mul r4, r3, r2  @ sizeof(PCB) * current_process
-    add r5, r0, r4  @ &pcb[current_process]
-
-    // Disable interrupts before mode switch
-    mrs r6, CPSR
-    orr r7, r6, #0x80
-    msr CPSR, r7
-
-    // Switch to system mode to save system SP and LR
-    mrs r6, CPSR
-    orr r7, r6, #0x1F
-    msr CPSR, r7        @ Switch to system mode
-    mov r8, sp
-    mov r9, lr
-    msr CPSR, r6        @ Switch back to IRQ mode
-
-    // Save R0-R12
-    ldmfd sp!, {r0-r4}
-    stmia r5!, {r0-r4}
-    ldmfd sp!, {r0-r4}
-    stmia r5!, {r0-r4}
-    ldmfd sp!, {r0-r2}
-    stmia r5!, {r0-r2}
-    sub r5, r5, #52
-
-    str r8, [r5, #52]   @ Save SP (R13)
-    str r9, [r5, #56]   @ Save LR (R14)
-    subs r6, lr, #4     @ Save PC (R15)
-    str r6, [r5, #60]   @ PC = LR_irq - 4
-    mrs r7, SPSR        @ Save SPSR
-    str r7, [r5, #64]
-    dsb                 @ Data Synchronization Barrier
-
+    SAVE_CONTEXT 4
     bl schedule
     bl timer_irq_handler
-
-    // Restore context
-    ldr r0, =pcb
-    ldr r1, =current_process
-    ldr r2, [r1]
-    mov r3, #76     @ sizeof(PCB) = 18 * 4 + 4
-    mul r4, r3, r2  @ sizeof(PCB) * current_process
-    add r5, r0, r4  @ &pcb[current_process]
-
-    ldr r6, [r5, #64]   @ Restore SPSR
-    msr SPSR, r6
-    ldr r7, [r5, #60]   @ Restore LR (R14)
-    adds lr, r7, #4     @ LR_irq = saved_PC + 4
-
-    // Disable interrupts before mode switch
-    mrs r6, CPSR
-    orr r7, r6, #0x80
-    msr CPSR, r7
-
-    // Switch to system mode to restore system SP and LR
-    mrs r6, CPSR
-    orr r7, r6, #0x1F
-    msr CPSR, r7        @ Switch to system mode
-    ldr sp, [r5, #52]   @ Restore SP (R13)
-    ldr lr, [r5, #56]   @ Restore LR (R14)
-    msr CPSR, r6        @ Switch back to IRQ mode
-
-    ldm r5, {r0-r12}    @ Restore R0-R12
-    subs pc, lr, #4     @ Running the other process
-
-    b hang
+    RESTORE_CONTEXT 4
 
 fiq_handler:
     bl log_registers

@@ -63,5 +63,6 @@ extern unsigned int quantum;
 void save_context(void);
 void restore_context(void);
 void schedule(void);
+void schedule_yield(void);
 
 #endif
