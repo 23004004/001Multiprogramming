@@ -64,18 +64,19 @@ void kernel_init(void)
     os_init();
 }
 
+// Function of the OS process
 void os_process(void)
 {
-    int n = 0;
+    char c = 'A';
 
     while (1)
     {
-        PRINT("----From OS: %d\n", n);
+        PRINT("----From OS: %c\n", c);
 
-        n++;
-        if (n == 10)
+        c++;
+        if (c > 'Z')
         {
-            n = 0;
+            c = 'A';
         }
 
         yield();

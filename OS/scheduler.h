@@ -50,6 +50,7 @@ extern PCB pcb[NUM_PROCESSES];
 
 void pcb_init(unsigned int pid);
 void setup_process_stack(unsigned int pid);
+unsigned int get_process_stack_top(unsigned int pid);
 void update_process_state(unsigned int pid, ProcessState new_state);
 
 // ============================================================================
