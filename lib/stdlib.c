@@ -90,8 +90,3 @@ void itox(int num, char *buffer)
     }
     buffer[i] = '\0';
 }
-
-void yield(void)
-{
-    asm volatile("swi 0" ::: "memory");
-}

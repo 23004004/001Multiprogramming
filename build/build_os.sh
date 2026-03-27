@@ -70,6 +70,7 @@ $CC -c $CFLAGS -o bin/uart.o ../drivers/uart.c
 echo "  Compiling libraries..."
 $CC -c $CFLAGS -o bin/stdio.o ../lib/stdio.c
 $CC -c $CFLAGS -o bin/stdlib.o ../lib/stdlib.c
+$CC -c $CFLAGS -o bin/syscalls.o ../lib/syscalls.c
 
 echo "  Compiling debugger..."
 $CC -c $CFLAGS -o bin/logs.o ../debugger/logs.c
@@ -85,6 +86,7 @@ $LD $LDFLAGS -o bin/os.elf \
     bin/uart.o \
     bin/stdio.o \
     bin/stdlib.o \
+    bin/syscalls.o \
     bin/logs.o
 
 echo "  Converting ELF to binary..."

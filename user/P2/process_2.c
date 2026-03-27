@@ -1,4 +1,5 @@
 #include "../../lib/stdio.h"
+#include "../../lib/syscalls.h"
 
 void process_2(void)
 {

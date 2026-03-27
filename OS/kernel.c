@@ -1,4 +1,5 @@
 #include "kernel.h"
+#include "../lib/syscalls.h"
 
 // ============================================================================
 // Kernel Functions

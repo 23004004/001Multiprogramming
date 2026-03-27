@@ -8,6 +8,5 @@
 int atoi(const char *s);
 void itoa(int num, char *buffer);
 void itox(int num, char *buffer);
-void yield(void);
 
 #endif
