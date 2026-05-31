@@ -15,10 +15,13 @@ void pcb_init(unsigned int pid)
     pcb[pid].pc = MEM_ADDR + pid * 0x100000;           // Entry point
     pcb[pid].sp = stack_top;                           // Stack top
     pcb[pid].lr = MEM_ADDR + pid * 0x100000;           // Entry point
-    pcb[pid].spsr = 0x1F;                              // System mode, IRQs enabled
+    pcb[pid].spsr = 0x10;                              // User mode, IRQs enabled
 
     for (int i = 0; i < 13; i++)
         pcb[pid].regs[i] = 0x0;
+
+    pcb[pid].exit_code = 0;
+    pcb[pid].fault_type = 0;
 
     update_process_state(pid, PROCESS_NEW);
 

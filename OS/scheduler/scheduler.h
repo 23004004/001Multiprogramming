@@ -1,7 +1,7 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
-#include "../lib/stdio.h"
+#include "../../lib/stdio.h"
 
 #ifdef PLATFORM_VERSATILEPB // ARM926EJ-S
 
@@ -32,15 +32,17 @@ typedef enum
 typedef struct
 {
     // Process context
-    unsigned int regs[13]; // R0 - R12
-    unsigned int sp;       // Stack pointer (R13)
-    unsigned int lr;       // Link register (R14)
-    unsigned int pc;       // Program counter (R15)
-    unsigned int spsr;     // Saved Program Status Register
+    unsigned int regs[13];  // R0 - R12
+    unsigned int sp;        // Stack pointer (R13)
+    unsigned int lr;        // Link register (R14)
+    unsigned int pc;        // Program counter (R15)
+    unsigned int spsr;      // Saved Program Status Register
 
     // Process information
-    unsigned int pid;      // Process ID
-    ProcessState state;    // NEW, READY, RUNNING, WAITING, SUSPENDED, TERMINATED
+    unsigned int pid;       // Process ID
+    ProcessState state;     // NEW, READY, RUNNING, WAITING, SUSPENDED, TERMINATED
+    int exit_code;
+    unsigned int fault_type;
 } PCB;
 
 // Number of user processes (OS, P1 and P2)

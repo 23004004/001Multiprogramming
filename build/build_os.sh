@@ -60,7 +60,7 @@ $AS $AFLAGS -o bin/processes.o ../OS/processes.s
 
 echo "  Compiling OS..."
 $CC -c $CFLAGS -o bin/kernel.o ../OS/kernel.c
-$CC -c $CFLAGS -o bin/scheduler.o ../OS/scheduler.c
+$CC -c $CFLAGS -o bin/scheduler.o ../OS/scheduler/scheduler.c
 
 echo "  Compiling drivers..."
 $CC -c $CFLAGS -o bin/intc.o ../drivers/intc.c

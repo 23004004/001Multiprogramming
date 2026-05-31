@@ -4,7 +4,7 @@
 #include "../lib/stdio.h"
 #include "../drivers/intc.h"
 #include "../drivers/timer.h"
-#include "scheduler.h"
+#include "scheduler/scheduler.h"
 
 // ============================================================================
 // Kernel Functions

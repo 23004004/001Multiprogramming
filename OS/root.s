@@ -12,7 +12,7 @@ b reset_handler
     ldr r0, =pcb
     ldr r1, =current_process
     ldr r2, [r1]
-    mov r3, #76     @ sizeof(PCB) = 19 * 4
+    mov r3, #84     @ sizeof(PCB) = 21 * 4
     mul r4, r3, r2
     add r5, r0, r4
 
@@ -51,7 +51,7 @@ b reset_handler
     ldr r0, =pcb
     ldr r1, =current_process
     ldr r2, [r1]
-    mov r3, #76     @ sizeof(PCB) = 19 * 4
+    mov r3, #84     @ sizeof(PCB) = 21 * 4
     mul r4, r3, r2
     add r5, r0, r4
 
