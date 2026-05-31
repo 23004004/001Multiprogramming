@@ -143,23 +143,24 @@ undefined_handler:
 
 swi_handler:
     SAVE_CONTEXT 0
-    bl schedule_yield
+    bl syscall_dispatcher
     RESTORE_CONTEXT 0
 
 prefetch_handler:
-    bl log_registers
-    bl log_pcb
-    b hang
+    SAVE_CONTEXT 4
+    mov r0, #1          @ fault_type = 1 for Prefetch Abort
+    bl fault_dispatcher
+    RESTORE_CONTEXT 4
 
 data_handler:
-    bl log_registers
-    bl log_pcb
-    b hang
+    SAVE_CONTEXT 8
+    mov r0, #2          @ fault_type = 2 for Data Abort
+    bl fault_dispatcher
+    RESTORE_CONTEXT 8
 
 irq_handler:
     SAVE_CONTEXT 4
-    bl schedule
-    bl timer_irq_handler
+    bl irq_dispatcher
     RESTORE_CONTEXT 4
 
 fiq_handler:

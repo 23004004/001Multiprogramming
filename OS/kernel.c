@@ -33,6 +33,7 @@ void os_init(void)
 
     current_process = 0;
     update_process_state(current_process, PROCESS_RUNNING);
+    PRINT("MODE_SWITCH KERNEL_TO_USER pid=%d reason=initial_launch\n", current_process);
 }
 
 // Function to initialize the kernel
@@ -79,7 +80,7 @@ void os_process(void)
             c = 'A';
         }
 
-        yield();
+        sys_yield();
 
     }
 }
