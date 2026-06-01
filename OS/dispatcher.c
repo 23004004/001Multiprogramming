@@ -19,6 +19,7 @@ void syscall_dispatcher(void)
 
     if (id == SYS_YIELD)
     {
+        pcb[current_process].syscall_id = SYS_YIELD;
         pcb[current_process].regs[0] = SUCCESS_RC;
         return_code = SUCCESS_RC;
         schedule_yield();
@@ -26,6 +27,8 @@ void syscall_dispatcher(void)
     else if (id == SYS_EXIT)
     {
         update_process_state(current_process, PROCESS_TERMINATED);
+        pcb[current_process].syscall_id = SYS_EXIT;
+        pcb[current_process].termination_reason = SYSCALL_EXIT;
         pcb[current_process].regs[0] = (int)arg1;
         pcb[current_process].exit_code = (int)arg1;
         return_code = (int)arg1;
@@ -36,6 +39,8 @@ void syscall_dispatcher(void)
         int fd = (int)arg1;
         char *buf = (char *)arg2;
         int len = (int)arg3;
+
+        pcb[current_process].syscall_id = SYS_WRITE;
 
         // Validate file descriptor and enforcing len cap
         if (fd != 1 || len < 0 || len > MAX_WRITE_LEN) 
@@ -65,7 +70,10 @@ void syscall_dispatcher(void)
     }
     else
     {   
-        update_process_state(current_process, PROCESS_TERMINATED);        
+        update_process_state(current_process, PROCESS_TERMINATED);
+        pcb[current_process].syscall_id = id;
+        pcb[current_process].termination_reason = SYSCALL_EXIT;
+        pcb[current_process].exit_code = -1;     
         pcb[current_process].regs[0] = INVALID_SYSCALL_RC;
         return_code = INVALID_SYSCALL_RC;
         schedule();
@@ -87,12 +95,40 @@ void irq_dispatcher(void)
 }
 
 // Dispatcher for Aborts
-void fault_dispatcher(unsigned int fault_type)
+void fault_dispatcher(unsigned int fault_status_reg)
 {
+    // Get FS from IFSR/DFSR[10,3:0]
+    unsigned int fault_status = ((fault_status_reg >> 6) & 0x10) | (fault_status_reg & 0x0F);
+    unsigned int fault_type = UNKNOWN_FAULT;
+
+    //  Decoding fault status (section/page)
+    if (fault_status == 0x01) 
+    {
+        fault_type = ALIGMENT_ERROR_FAULT;
+    }
+    else if (fault_status == 0x03 || fault_status == 0x06) 
+    {
+        fault_type = ACCESS_FLAG_FAULT;
+    }
+    else if (fault_status == 0x05 || fault_status == 0x07) 
+    {
+        fault_type = INVALID_MAPPING_FAULT;
+    }
+    else if (fault_status == 0x09 || fault_status == 0x0B) 
+    {
+        fault_type = PRIVILEGE_VIOLATION_FAULT;
+    }
+    else if (fault_status == 0x0D || fault_status == 0x0F) 
+    {
+        fault_type = PERMISSION_FAULT; 
+    }
+
     PRINT("MODE_SWITCH USER_TO_KERNEL pid=%d reason=fault type=%d\n", current_process, fault_type);
     
     // Terminate faulting task and pick next runnable task
     update_process_state(current_process, PROCESS_TERMINATED);
+    pcb[current_process].termination_reason = FAULT_EXIT;
+    pcb[current_process].exit_code = -1;
     pcb[current_process].fault_type = fault_type;
     schedule(); 
     

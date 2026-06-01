@@ -85,11 +85,12 @@ When a hardware exception or processor fault occurs, the `fault_dispatcher` cate
 | Fault Classification / Type | Value | Outcome |
 | :--- | :--- | :--- |
 | `NO_FAULT` | 0 | **-** |
-| `INVALID_MAPPING_FAULT` (Page Fault) | 1 | **Terminate** |
-| `PRIVILEGE_VIOLATION_FAULT` | 2 | **Terminate** |
-| `ALIGNMENT_ERROR_FAULT` | 3 | **Terminate** |
-| `PERMISSION_FAULT` | 4 | **Terminate** |
-| `UNKNOWN_FAULT` | 5 | **Terminate** |
+| `ALIGNMENT_ERROR_FAULT` | 1 | **Terminate** |
+| `ACCESS_FLAG_FAULT` | 2 | **Terminate** |
+| `INVALID_MAPPING_FAULT` (Translation Fault) | 3 | **Terminate** |
+| `PRIVILEGE_VIOLATION_FAULT` (Domain Fault) | 4 | **Terminate** |
+| `PERMISSION_FAULT` | 5 | **Terminate** |
+| `UNKNOWN_FAULT` | 6 | **Terminate** |
 
 **Recovery Strategy**  
 The current kernel policy is **Fail-Stop** for individual processes. If any fault is detected:

@@ -90,12 +90,24 @@ vector_table:
     b fiq_handler        @ 0x1C: FIQ (Fast Interrupt Request)
 
 reset_handler:
+    // Set stack pointer for FIQs
+    msr CPSR, #0xD1 @ FIQ mode (0b10001) + IRQ/FIQ disabled
+    ldr sp, =_stack_top
+
     // Set stack pointer for IRQs
     msr CPSR, #0xD2 @ IRQ mode (0b10010) + IRQ/FIQ disabled
     ldr sp, =_stack_top
 
     // Set stack pointer for SWI/SVC mode
     msr CPSR, #0xD3 @ SVC mode (0b10011) + IRQ/FIQ disabled
+    ldr sp, =_stack_top
+
+    // Set stack pointer for ABT mode
+    msr CPSR, #0xD7 @ ABT mode (0b10111) + IRQ/FIQ disabled
+    ldr sp, =_stack_top
+
+    // Set stack pointer for UND mode
+    msr CPSR, #0xDB @ UND mode (0b11011) + IRQ/FIQ disabled
     ldr sp, =_stack_top
 
     // Set CPU to System mode
@@ -148,13 +160,13 @@ swi_handler:
 
 prefetch_handler:
     SAVE_CONTEXT 4
-    mov r0, #1          @ fault_type
+    mrc p15, 0, r0, c5, c0, 1   @ IFSR
     bl fault_dispatcher
     RESTORE_CONTEXT 4
 
 data_handler:
     SAVE_CONTEXT 8
-    mov r0, #2          @ fault_type
+    mrc p15, 0, r0, c5, c0, 0   @ DFSR
     bl fault_dispatcher
     RESTORE_CONTEXT 8
 
