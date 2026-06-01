@@ -12,6 +12,10 @@ int process_1(void) {
             /* optional */ 
         }
 
+        // Small delay to prevent overwhelming UART
+        for (volatile int i = 0; i < 95000000; i++)
+            ;
+
         sys_yield(); 
     }
 

@@ -7,6 +7,8 @@
 // Dispatcher for Syscalls
 void syscall_dispatcher(void)
 {
+    int return_code = 0;
+
     // Get saved syscall ID and arguments
     unsigned int id = pcb[current_process].regs[0];
     unsigned int arg1 = pcb[current_process].regs[1];
@@ -17,13 +19,16 @@ void syscall_dispatcher(void)
 
     if (id == SYS_YIELD)
     {
-        schedule_yield();
         pcb[current_process].regs[0] = SUCCESS_RC;
+        return_code = SUCCESS_RC;
+        schedule_yield();
     }
     else if (id == SYS_EXIT)
     {
         update_process_state(current_process, PROCESS_TERMINATED);
+        pcb[current_process].regs[0] = (int)arg1;
         pcb[current_process].exit_code = (int)arg1;
+        return_code = (int)arg1;
         schedule();
     }
     else if (id == SYS_WRITE)
@@ -36,8 +41,8 @@ void syscall_dispatcher(void)
         if (fd != 1 || len < 0 || len > MAX_WRITE_LEN) 
         {
             pcb[current_process].regs[0] = INVALID_ARGUMENT_RC;
+            return_code = INVALID_ARGUMENT_RC;
         }
-
         // Validate buf/len as a readable user range and validate user pointer
         else if (buf == 0 || 
                 (unsigned int)buf < 0x10000 || // Block kernel access
@@ -46,6 +51,7 @@ void syscall_dispatcher(void)
                 (unsigned int)(buf + len) > (MEM_ADDR + (current_process + 1) * 0x100000)) // Check top task boundary
         {
             pcb[current_process].regs[0] = INVALID_USR_PTR_RC;
+            return_code = INVALID_USR_PTR_RC;
         }
         else
         {
@@ -54,15 +60,19 @@ void syscall_dispatcher(void)
                 PRINT("%c", buf[i]);
             }
             pcb[current_process].regs[0] = len; // Return byte count
+            return_code = len;
         }
     }
     else
-    {
+    {   
+        update_process_state(current_process, PROCESS_TERMINATED);        
         pcb[current_process].regs[0] = INVALID_SYSCALL_RC;
+        return_code = INVALID_SYSCALL_RC;
+        schedule();
     }
 
     PRINT("MODE_SWITCH KERNEL_TO_USER pid=%d reason=syscall_return id=%d rc=%d\n", 
-          current_process, id, (int)pcb[current_process].regs[0]);
+          current_process, id, return_code);
 }
 
 // Dispatcher for IRQs

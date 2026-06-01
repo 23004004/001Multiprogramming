@@ -30,6 +30,23 @@ typedef enum
     PROCESS_TERMINATED = 5
 } ProcessState;
 
+typedef enum
+{
+    NO_FAULT = 0,
+    INVALID_MAPPING_FAULT = 1, // PAGE FAULT
+    PRIVILEGE_VIOLATION_FAULT = 2,
+    ALIGMENT_ERROR_FAULT = 3,
+    PERMISSION_FAULT = 4,
+    UNKNOWN_FAULT = 5
+} FaultType;
+
+typedef enum
+{
+    NORMAL_EXIT = 0,
+    SYSCALL_EXIT = 1,
+    FAULT_EXIT = 2
+} TerminationReason;
+
 typedef struct
 {
     // Process context
@@ -41,9 +58,12 @@ typedef struct
 
     // Process information
     unsigned int pid;       // Process ID
-    ProcessState state;     // NEW, READY, RUNNING, WAITING, SUSPENDED, TERMINATED
-    int exit_code;
-    unsigned int fault_type;
+    unsigned int state;     // NEW, READY, RUNNING, WAITING, SUSPENDED, TERMINATED
+
+    unsigned int syscall_id;            // SYS_YIELD, SYS_EXIT, SYS_WRITE
+    unsigned int fault_type;            // NO_FAULT, INVALID_MAPPING_FAULT, PRIVILEGE_VIOLATION_FAULT, ALIGMENT_ERROR_FAULT, PERMISSION_FAULT, UNKNOWN_FAULT
+    unsigned int termination_reason;    // NORMAL_EXIT, SYSCALL_EXIT, FAULT_EXIT
+    int exit_code;                      // 0 >= normal exit, < 0 for error codes
 } PCB;
 
 // Number of user processes (OS, P1 and P2)

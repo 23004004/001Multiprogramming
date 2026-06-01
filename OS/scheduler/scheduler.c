@@ -12,16 +12,18 @@ void pcb_init(unsigned int pid)
     unsigned int stack_top = get_process_stack_top(pid);
 
     pcb[pid].pid = pid;
-    pcb[pid].pc = MEM_ADDR + pid * 0x100000;           // Entry point
-    pcb[pid].sp = stack_top;                           // Stack top
-    pcb[pid].lr = MEM_ADDR + pid * 0x100000;           // Entry point
-    pcb[pid].spsr = 0x10;                              // User mode, IRQs enabled
+    pcb[pid].pc = MEM_ADDR + pid * 0x100000; // Entry point
+    pcb[pid].sp = stack_top;
+    pcb[pid].lr = MEM_ADDR + pid * 0x100000; // Entry point
+    pcb[pid].spsr = 0x10;                    // User mode, IRQs enabled
 
     for (int i = 0; i < 13; i++)
         pcb[pid].regs[i] = 0x0;
 
+    pcb[pid].syscall_id = 0;
+    pcb[pid].fault_type = NO_FAULT;
+    pcb[pid].termination_reason = NORMAL_EXIT;
     pcb[pid].exit_code = 0;
-    pcb[pid].fault_type = 0;
 
     update_process_state(pid, PROCESS_NEW);
 
@@ -97,7 +99,7 @@ void scheduler_init(void)
 // Fuction to choose the next process to run (round-robin scheduler)
 void schedule(void)
 {
-    if (quantum == 0)
+    if (quantum == 0 || pcb[current_process].state == PROCESS_TERMINATED)
     {
         PRINT("...\n");
 
@@ -113,14 +115,9 @@ void schedule(void)
             // Get the next process
             current_process = dequeue(&ready_queue);
             update_process_state(current_process, PROCESS_RUNNING);
-            
-            quantum = 10;
         }
-        else
-        {
-            // Queue is empty, keep running the current process
-            quantum = 10; 
-        }
+
+        quantum = 10;
     }
     else
     {
@@ -146,11 +143,6 @@ void schedule_yield(void)
         current_process = dequeue(&ready_queue);
         update_process_state(current_process, PROCESS_RUNNING);
     }
-    else
-    {
-        // Queue is empty, keep running the current process
-        update_process_state(current_process, PROCESS_RUNNING);
-    }
 
-    quantum = 20;
+    quantum = 10;
 }

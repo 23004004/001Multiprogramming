@@ -9,11 +9,11 @@ typedef unsigned int size_t;
 // System Call Functions
 // ============================================================================
 
-enum {
-    SYS_YIELD = 0,
-    SYS_EXIT = 1,
-    SYS_WRITE = 2,
-};
+typedef enum {
+    SYS_YIELD = 1,
+    SYS_EXIT = 2,
+    SYS_WRITE = 3,
+} SYSCALL_ID;
 
 static inline int32_t syscall3(uint32_t id, uint32_t a1, uint32_t a2, uint32_t a3) 
 {

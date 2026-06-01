@@ -12,7 +12,7 @@ b reset_handler
     ldr r0, =pcb
     ldr r1, =current_process
     ldr r2, [r1]
-    mov r3, #84     @ sizeof(PCB) = 21 * 4
+    mov r3, #92     @ sizeof(PCB) = 23 * 4
     mul r4, r3, r2
     add r5, r0, r4
 
@@ -51,7 +51,7 @@ b reset_handler
     ldr r0, =pcb
     ldr r1, =current_process
     ldr r2, [r1]
-    mov r3, #84     @ sizeof(PCB) = 21 * 4
+    mov r3, #92     @ sizeof(PCB) = 23 * 4
     mul r4, r3, r2
     add r5, r0, r4
 
@@ -99,7 +99,7 @@ reset_handler:
     ldr sp, =_stack_top
 
     // Set CPU to System mode
-    msr CPSR, #0xDF @ IRQ mode (0b11111) + IRQ/FIQ disabled
+    msr CPSR, #0xDF @ SYS mode (0b11111) + IRQ/FIQ disabled
 
     // Set the initial stack pointer for the OS
     ldr sp, =_stack_top
@@ -148,13 +148,13 @@ swi_handler:
 
 prefetch_handler:
     SAVE_CONTEXT 4
-    mov r0, #1          @ fault_type = 1 for Prefetch Abort
+    mov r0, #1          @ fault_type
     bl fault_dispatcher
     RESTORE_CONTEXT 4
 
 data_handler:
     SAVE_CONTEXT 8
-    mov r0, #2          @ fault_type = 2 for Data Abort
+    mov r0, #2          @ fault_type
     bl fault_dispatcher
     RESTORE_CONTEXT 8
 
