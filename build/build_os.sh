@@ -62,6 +62,7 @@ echo "  Compiling OS..."
 $CC -c $CFLAGS -o bin/kernel.o ../OS/kernel.c
 $CC -c $CFLAGS -o bin/dispatcher.o ../OS/dispatcher.c
 $CC -c $CFLAGS -o bin/scheduler.o ../OS/scheduler/scheduler.c
+$CC -c $CFLAGS -o bin/queue.o ../OS/scheduler/queue.c
 
 echo "  Compiling drivers..."
 $CC -c $CFLAGS -o bin/intc.o ../drivers/intc.c
@@ -82,6 +83,7 @@ $LD $LDFLAGS -o bin/os.elf \
     bin/kernel.o \
     bin/dispatcher.o \
     bin/scheduler.o \
+    bin/queue.o \
     bin/intc.o \
     bin/timer.o \
     bin/uart.o \

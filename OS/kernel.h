@@ -4,6 +4,7 @@
 #include "../lib/stdio.h"
 #include "../drivers/intc.h"
 #include "../drivers/timer.h"
+#include "../lib/syscalls.h"
 #include "scheduler/scheduler.h"
 
 // ============================================================================
@@ -18,4 +19,4 @@ void create_process(unsigned int pid);
 void os_process(void);
 void context_switch(void);
 
-#endif
+#endif // KERNEL_H

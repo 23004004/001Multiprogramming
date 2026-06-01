@@ -2,6 +2,7 @@
 #define SCHEDULER_H
 
 #include "../../lib/stdio.h"
+#include "queue.h"
 
 #ifdef PLATFORM_VERSATILEPB // ARM926EJ-S
 
@@ -46,9 +47,9 @@ typedef struct
 } PCB;
 
 // Number of user processes (OS, P1 and P2)
-#define NUM_PROCESSES 3
+#define MAX_PROCESSES 3
 
-extern PCB pcb[NUM_PROCESSES];
+extern PCB pcb[MAX_PROCESSES];
 
 void pcb_init(unsigned int pid);
 void setup_process_stack(unsigned int pid);
@@ -59,13 +60,16 @@ void update_process_state(unsigned int pid, ProcessState new_state);
 // Scheduler
 // ============================================================================
 
+extern Queue ready_queue;
 extern unsigned int current_process;
 extern unsigned int next_process;
 extern unsigned int quantum;
 
-void save_context(void);
-void restore_context(void);
+void scheduler_init(void);
 void schedule(void);
 void schedule_yield(void);
 
-#endif
+void save_context(void);
+void restore_context(void);
+
+#endif // SCHEDULER_H

@@ -1,5 +1,4 @@
 #include "kernel.h"
-#include "../lib/syscalls.h"
 
 // ============================================================================
 // Kernel Functions
@@ -23,6 +22,7 @@ unsigned int process_count = 0;
 void os_init(void)
 {
     PRINT("Starting OS ... ");
+    scheduler_init();
     create_process(process_count++); // OS process
     PRINT("OK\n");
 
