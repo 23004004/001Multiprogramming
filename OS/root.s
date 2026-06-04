@@ -121,7 +121,7 @@ reset_handler:
     ldr r1, =__bss_end__
     mov r2, #0
 clear_bss:
-    cmp r0, r1          @ While the current address hasn't reached the end of .bss
+    cmp r0, r1          @ While the current address has not reached the end of .bss
     it lt
     strlt r2, [r0], #4  @ Clear current location and go to the next (increment by 4 bytes)
     blt clear_bss
@@ -150,11 +150,6 @@ relocate_p2:
     b relocate_p2
 
 p2_relocation_done:
-    // Enable strict alignment checking
-    mrc p15, 0, r0, c1, c0, 0   @ System Control Register (SCTLR)
-    orr r0, r0, #0x2            @ Enable Strict Alignment (A bit)
-    mcr p15, 0, r0, c1, c0, 0
-
     // Place a memory barrier
     dsb @ Data Synchronization Barrier
     isb @ Instruction Synchronization Barrier
@@ -176,6 +171,26 @@ p2_relocation_done:
     // If the OS context ever returns, loop forever
 hang:
     b hang
+
+.globl enable_mmu
+enable_mmu:
+    // Indicate the base address of the page table to the MMU
+    ldr r1, =page_table
+    mcr p15, 0, r1, c2, c0, 0   @ Write to TTBR0 (Translation Table Base Register)
+
+    // Set domain 0 to client mode
+    mov r0, #0x1
+    mcr p15, 0, r0, c3, c0, 0   @ Write to DACR (Domain Access Control Register)
+    
+    // Set up SCTLR (System Control Register) to enable the MMU and Strict Alignment
+    mrc p15, 0, r2, c1, c0, 0
+    orr r2, r2, #0x1            @ Enable MMU (M bit)
+    orr r2, r2, #0x2            @ Enable Strict Alignment (A bit)
+    mcr p15, 0, r2, c1, c0, 0
+
+    dsb @ Data Synchronization Barrier
+    isb @ Instruction Synchronization Barrier
+    bx lr
 
 undefined_handler:
     SAVE_CONTEXT 4

@@ -46,6 +46,11 @@ void kernel_init(void)
 
     PRINT("\nStarting Kernel ...\n\n");
 
+    // Initialize the MPU to set up memory regions and permissions
+    PRINT("Initializing MPU ... ");
+    mpu_init();
+    PRINT("OK\n");
+
     // Disable the watchdog timer to prevent resets
     PRINT("Disabling watchdog ... ");
     watchdog_disable();

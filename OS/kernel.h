@@ -6,6 +6,7 @@
 #include "../drivers/timer.h"
 #include "../lib/syscalls.h"
 #include "scheduler/scheduler.h"
+#include "./mpu.h"
 
 // ============================================================================
 // Kernel Functions
@@ -17,6 +18,5 @@ extern unsigned int process_count;
 
 void create_process(unsigned int pid);
 void os_process(void);
-void context_switch(void);
 
 #endif // KERNEL_H

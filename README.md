@@ -10,6 +10,7 @@ This project implements a basic multiprogramming operating system capable of per
 - **PCB Context Management**: Utilizes a structured Process Control Block to save and restore the full CPU state during context switches, allowing seamless multitasking between independent tasks.
 - **Millisecond Timer Support**: Integrated hardware timer drivers for VersatilePB and BeagleBone Black that generate periodic interrupts, serving as the fundamental timing mechanism for the scheduler's preemption.
 - **System Call Interface (ABI)**: Implements a secure gateway for user-space processes to interact with the kernel, supporting essential operations like process yielding, termination, and UART-based console output.
+- **Memory Protection Unit (MPU)**: Configures the Memory Management Unit (MMU) using an identity map to function as an MPU. It enforces hardware-level isolation between Kernel and User memory regions, preventing unauthorized access to critical system resources.
 - **Hardware Fault Isolation**: Includes a fault dispatcher that detects and handles various ARM exceptions, protecting system stability by terminating erroneous processes while keeping the kernel running.
 
 ## How to Run?
@@ -136,9 +137,17 @@ When a hardware exception or processor fault occurs, the `fault_dispatcher` cate
 | `FAULT_PRIV_VIOLATION` | 4 | **Terminate** | Domain Fault / MMU |
 | `FAULT_PERMISSION` | 5 | **Terminate** | MMU |
 | `FAULT_SYNC_EXT_ABORT` | 6 | **Terminate** | Synchronous External Abort |
+| `FAULT_ASYNC_EXT_ABORT` | 7 | **Terminate** | Asynchronous External Abort |
+| `FAULT_TRANS_TBL_WALK_SEA` | 8 | **Terminate** | Translation Table Walk (Sync External Abort) |
+| `FAULT_TRANS_TBL_WALK_SPE` | 9 | **Terminate** | Translation Table Walk (Sync Parity Error) |
+| `FAULT_MEM_ACCESS_SPE` | 10 | **Terminate** | Memory Access (Synchronous Parity Error) |
+| `FAULT_MEM_ACCESS_APE` | 11 | **Terminate** | Memory Access (Asynchronous Parity Error) |
+| `FAULT_DEBUG_EVENT` | 12 | **Terminate** | - |
+| `FAULT_INST_CACHE_MAINT` | 13 | **Terminate** | Instruction Cache Maintenance |
+| `FAULT_IMP_DEF_LD` | 14 | **Terminate** | Implementation Defined (Lockdown) |
+| `FAULT_IMP_DEF_CA` | 15 | **Terminate** | Implementation Defined (Coprocessor Abort) |
 | `FAULT_UNKNOWN` | -1 | **Terminate** | - |
 | `FAULT_UND_INST` | -2 | **Terminate** | Undefined Instruction |
-
 
 **Recovery Strategy**  
 
