@@ -126,6 +126,18 @@ clear_bss:
     strlt r2, [r0], #4  @ Clear current location and go to the next (increment by 4 bytes)
     blt clear_bss
 
+    // Relocate Process OS (LMA to VMA)
+    ldr r0, =__os_lma_start
+    ldr r1, =__os_vma_start
+    ldr r2, =__os_vma_end
+relocate_os:
+    cmp r1, r2
+    bge os_relocation_done
+    ldr r3, [r0], #4
+    str r3, [r1], #4
+    b relocate_os
+
+os_relocation_done:
     // Relocate Process 1 (LMA to VMA)
     ldr r0, =__p1_lma_start
     ldr r1, =__p1_vma_start
@@ -161,14 +173,7 @@ p2_relocation_done:
     // Jump to the C main function
     bl kernel_init
 
-    // Load the dedicated stack for PID 0 before entering the OS process loop
-    ldr r0, =pcb
-    ldr sp, [r0, #52]
-
-    // Start running the OS context as PID 0
-    bl os_process
-
-    // If the OS context ever returns, loop forever
+    // If the kernel ever returns, loop forever
 hang:
     b hang
 

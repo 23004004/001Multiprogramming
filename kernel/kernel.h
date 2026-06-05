@@ -4,7 +4,6 @@
 #include "../lib/stdio.h"
 #include "../drivers/intc.h"
 #include "../drivers/timer.h"
-#include "../lib/syscalls.h"
 #include "scheduler/scheduler.h"
 #include "./mpu.h"
 

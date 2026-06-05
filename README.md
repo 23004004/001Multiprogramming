@@ -68,7 +68,19 @@ The scheduler enforces a Round-Robin scheduling policy. It manages CPU time allo
 2. **Process Termination**: If the current process enters the `PROCESS_TERMINATED` state, a new process is immediately scheduled.
 3. **Voluntary Yield**: A process can choose to give up its remaining time via the `SYS_YIELD` system call.
 
-If any of these conditions are met, the scheduler moves to the next process in the ready queue and resets the `quantum`. When idling, the process OS will continue running.
+If any of these conditions are met, the scheduler moves to the next process in the ready queue and resets the `quantum`. When idling, the OS process will continue running.
+
+### Process Memory Map
+
+Each process is allocated a dedicated memory region starting at a base address determined by the platform and its PID. The entry point for each process is at the beginning of its allocated 1MB region.
+
+| PID | Process Name   | Memory Start Address (VersatilePB) | Memory Start Address (BeagleBone Black) |
+| :-- | :------------- | :--------------------------------- | :-------------------------------------- |
+| 0   | Kernel         | `0x00000000`                       | `0x82000000`                            |
+| 1   | OS Process     | `0x00100000`                       | `0x82100000`                            |
+| 2   | User Process 1 | `0x00200000`                       | `0x82200000`                            |
+| 3   | User Process 2 | `0x00300000`                       | `0x82300000`                            |
+| ... | ...            | ...                                | ...                                     |
 
 ### Process Control Block (PCB)
 
